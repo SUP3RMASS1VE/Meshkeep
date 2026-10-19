@@ -14,7 +14,7 @@ Keep `desktop/build/`, which contains the app artwork and icons. Keep `web/vendo
 
 1. Open **Actions → Build desktop apps → Run workflow** and select `main`.
 2. For downloads only, leave the release checkbox unchecked. Both installer artifacts appear on the successful run's summary.
-3. To prepare a release, tick **Create a draft release with both installers**. After both builds pass, review the draft under **Releases**, then publish it.
+3. Pushes to `main`/`master` prepare a draft automatically after both builds pass. For a manual run, tick **Create a draft release with both installers**. Review the draft under **Releases**, then publish it for permanent public download links.
 
 The draft includes the Mac DMG, Windows Setup EXE and combined SHA-256 checksums. Installers belong in Releases, not in the source repository. Existing published releases are never overwritten by the workflow. Bump the version in `desktop/package.json` and both lockfile version fields before publishing a new version.
 

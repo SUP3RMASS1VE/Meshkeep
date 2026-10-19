@@ -111,7 +111,7 @@ GitHub can build the Mac and Windows installers for you; no local compilation is
 
 Open **Actions → Build desktop apps → Run workflow**. When the run completes, download the Mac or Windows installer from its **Artifacts** section. Tick **Create a draft release with both installers** when running from `main` to prepare a release with both downloads and checksums.
 
-The workflow also runs on pushes to `main`/`master` and pull requests. See the [GitHub Actions guide](docs/github-actions.md) for setup, version tags and publishing the draft.
+Pushes to `main`/`master` also prepare a draft release automatically after both builds pass. Pull requests build without creating a release. See the [GitHub Actions guide](docs/github-actions.md) for setup, version tags and publishing the draft.
 
 ## Build the Mac desktop app
 

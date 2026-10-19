@@ -82,7 +82,7 @@ jobs:
 
   draft-release:
     name: Prepare draft release
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.make_release && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+    if: (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) || (github.event_name == 'workflow_dispatch' && inputs.make_release && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 10
