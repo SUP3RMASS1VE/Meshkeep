@@ -56,7 +56,7 @@ and texture files are not loaded. STL/OBJ/PLY coordinates are assumed to be mm.
 
 Cards use embedded images when available, otherwise generate and cache previews
 as they become visible. Automatic generation is limited to files up to 16 MiB.
-The studio accepts files up to 64 MiB, 3MF packages up to 256 MiB unpacked, and up
+The studio accepts files up to 250 MiB, 3MF packages up to 500 MiB unpacked, and up
 to 5 million triangles, including unique and instanced 3MF geometry. Larger files
 can still be edited in the metadata editor. WebGL 2 is required for rendering.
 Appearance controls affect the preview only; **Use view as library thumbnail**

@@ -29,11 +29,11 @@ Your models stay in their original folders. Tags, collections and print records 
 
 Meshkeep browses and previews **3MF, STL, OBJ, PLY and AMF** files. Metadata fields and editing support vary by format.
 
-Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.2**, which removes the legacy browser launcher. The Windows 2.0.1 installer remains available; a Windows 2.0.2 installer must be rebuilt on Windows.
+Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.3**, which raises preview limits to 250 MiB per model and 500 MiB unpacked for 3MF. GitHub Actions can build both installers with these higher limits.
 
 ## Install on Windows
 
-Download `Meshkeep-2.0.2-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
+Download `Meshkeep-2.0.3-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
 It installs for your Windows account and creates Start menu and desktop shortcuts.
 The app bundles Python and Electron; Python and Node.js are not needed to use it.
 This build is unsigned, so Windows may show an unknown-publisher warning.
@@ -95,13 +95,23 @@ Tags, collections and print history live in the catalogue; they are not embedded
 
 ## Current limits
 
-- Studio input: **64 MiB per model**, **256 MiB unpacked for 3MF**, and **5 million triangles**, including painted subdivisions and instances.
+See [higher-limit verification](docs/higher-preview-limits.md) for the tested large models and boundary checks.
+
+- Studio input: **250 MiB per model**, **500 MiB unpacked for 3MF**, and **5 million triangles**, including painted subdivisions and instances.
 - Automatic thumbnail generation: files up to **16 MiB**. Larger models can be opened manually within the studio limits.
 - 3MF texture-based extensions and external OBJ material/texture files are not loaded. Unsupported 3MF materials produce a notice.
 - STL, OBJ and PLY coordinates are assumed to be millimetres; AMF and 3MF units are respected.
 - Volume is an estimate, especially for open, overlapping or inconsistently wound geometry. It is not a slicer's material-use estimate.
 - Geometry matching compares mesh equivalence. Arbitrary rotation, scaling and different triangulations may not match.
 - Watched folders update while Meshkeep is running. External renames are treated as a removal and addition.
+
+## Build both apps with GitHub Actions
+
+GitHub can build the Mac and Windows installers for you; no local compilation is needed.
+
+Open **Actions → Build desktop apps → Run workflow**. When the run completes, download the Mac or Windows installer from its **Artifacts** section. Tick **Create a draft release with both installers** when running from `main` to prepare a release with both downloads and checksums.
+
+The workflow also runs on pushes to `main`/`master` and pull requests. See the [GitHub Actions guide](docs/github-actions.md) for setup, version tags and publishing the draft.
 
 ## Build the Mac desktop app
 
@@ -114,7 +124,7 @@ On an Apple Silicon Mac, install Node.js 18 or later and Xcode Command Line Tool
 The script builds the Python sidecar using PyInstaller, smoke-tests it, installs the locked Electron dependencies and packages the app. Re-running it rebuilds the generated outputs in `desktop/dist/`:
 
 ```text
-Meshkeep-2.0.2-arm64.dmg
+Meshkeep-2.0.3-arm64.dmg
 mac-arm64/Meshkeep.app
 ```
 

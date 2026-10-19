@@ -1,36 +1,27 @@
 # Publishing Meshkeep on GitHub
 
-Use **one repository** for the shared Mac and Windows source code. The code chooses the appropriate executable, file paths, slicer launcher and menus for each platform. Build each installer on its own operating system.
+Use one repository for the shared Mac and Windows source. GitHub Actions now builds both installers on hosted machines, so you do not need to compile on your own computers.
 
 ## Upload the source
 
-A prepared source folder is supplied as `github-upload/` and as `Meshkeep-GitHub-Source.zip` outside the repository export. Unzip the source archive, open its `meshkeep` folder, and upload that folder's **contents** to the repository root. Do not upload the ZIP itself as the repository's source, or put the source inside another `Windows build` folder.
+Unzip `Meshkeep-GitHub-Source.zip`, open its `meshkeep` folder, and upload the folder's contents to the repository root. Include hidden files and folders: `.github/workflows/build-desktop.yml`, `.gitignore` and `.gitattributes`. In Finder, press **Command + Shift + .** to show hidden items if needed.
 
-The root should contain `README.md`, `app.py`, `file_state.py`, `build-mac.sh`, `build-windows.ps1`, `.gitignore`, `.gitattributes`, and the `desktop`, `web`, `formats`, `tests` and `docs` folders. Include the dotfiles when copying or uploading. With Git, `git add .` includes them automatically.
+The repository root should contain `README.md`, `app.py`, `file_state.py`, both build scripts, and the `.github`, `tools`, `desktop`, `web`, `formats`, `tests` and `docs` folders. Do not upload the source ZIP itself as the repository's source or nest the project inside a `Windows build` folder.
 
-Keep `desktop/build/`: it contains the app artwork and both platform icons. Keep `web/vendor/three/build/`: it contains the JavaScript runtime needed for offline previews. These are source assets, unlike the generated top-level `build/` directory.
+Keep `desktop/build/`, which contains the app artwork and icons. Keep `web/vendor/three/build/`, which contains the renderer needed for offline previews. Generated top-level `build/`, dependencies, installers, sidecars, local catalogues, personal files and agent state are excluded by `.gitignore` and omitted from the prepared ZIP.
 
-Do not upload dependencies, virtual environments, generated app folders, local catalogues, personal models, local agent state or the imported Windows comparison folder. The root `.gitignore` excludes these. The prepared export already leaves them out.
+## Download builds or prepare a release
 
-The source archive intentionally omits the historical Mac-to-Windows handoff, which contains machine-specific context. Current build instructions and verification reports are in the README and docs.
+1. Open **Actions → Build desktop apps → Run workflow** and select `main`.
+2. For downloads only, leave the release checkbox unchecked. Both installer artifacts appear on the successful run's summary.
+3. To prepare a release, tick **Create a draft release with both installers**. After both builds pass, review the draft under **Releases**, then publish it.
 
-## Upload the installers as a Release
+The draft includes the Mac DMG, Windows Setup EXE and combined SHA-256 checksums. Installers belong in Releases, not in the source repository. Existing published releases are never overwritten by the workflow. Bump the version in `desktop/package.json` and both lockfile version fields before publishing a new version.
 
-For a **v2.0.2** release, build both platform installers from the same source and attach them as downloadable assets:
-
-- `Meshkeep-2.0.2-arm64.dmg` — Apple Silicon Mac installer, rebuilt from the merged source on Mac.
-- `Meshkeep-2.0.2-Windows-x64-Setup.exe` — Windows x64 installer; rebuild it on the PC from the current source before publishing v2.0.2.
-
-Attach `SHA256SUMS.txt` alongside them so downloads can be checked. The supplied `release-files/` folder groups the available downloads and records which platform versions are ready; that folder is ignored by Git. Do not commit these large installers into the source repository.
-
-The Mac ZIP is optional. Builder debug files, blockmaps, unpacked apps and sidecar directories are not needed for this manual release. This version has no configured automatic update service.
-
-Both current installers are unsigned. Keep the README's Gatekeeper instructions for Mac and the unsigned-publisher note for Windows. Do not claim Apple notarisation or Windows code signing.
+See the [GitHub Actions guide](github-actions.md) for version tags, automatic builds, retention and first-run setup. Both apps remain unsigned; keep the README's Mac Gatekeeper instructions and Windows publisher note.
 
 ## Future changes
 
-Work from the same repository on both computers: pull the latest changes before editing, preserve platform-specific branches, and push source changes back when finished. Rebuild Mac releases on a Mac and Windows releases on Windows. Test both platforms when shared code changes.
+Pull or download the latest shared source before editing, preserve both platform branches, then commit/upload changes to GitHub. The hosted build jobs run independently for Apple Silicon Mac and Windows x64. You can also use the local build scripts if desired. There is no automatic update service inside installed Meshkeep apps; users install a new release to update.
 
-See [shared-source verification](verification-shared.md) and [Windows verification](verification-windows.md) for coverage and limitations.
-
-The available Windows 2.0.1 installer predates removal of the legacy browser entry point in 2.0.2. It still launches as a normal desktop app, but do not rename it or label it as a 2.0.2 build. Historical verification reports describe their original versions.
+The historical [shared-source verification](verification-shared.md) and [Windows verification](verification-windows.md) describe previous builds. The new workflow still needs its first actual GitHub run after upload; local validation is not a claim that hosted builds have already completed.

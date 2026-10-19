@@ -138,7 +138,7 @@ class LibraryTests(unittest.TestCase):
         with self.assertRaises(MetaError):
             self.library.cache_preview(path, png, stamp)
         with open(path, 'wb') as f:
-            f.truncate((64 << 20) + 1)
+            f.truncate((250 << 20) + 1)
         with self.assertRaises(MetaError):
             self.api.model({'path': [path]})
 

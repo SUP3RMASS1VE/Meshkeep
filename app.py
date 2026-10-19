@@ -42,6 +42,10 @@ else:
     HERE = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(HERE, "web")
 # JSON bodies; the cover image travels as base64 PNG inside /api/save.
+MAX_MODEL_BYTES = 250 << 20
+MAX_3MF_UNPACKED_BYTES = 500 << 20
+MAX_3MF_ENTRIES = 5000
+
 MAX_BODY = 20 << 20
 MAX_IMAGE_BYTES = 4 << 20
 
@@ -225,13 +229,13 @@ class Api(WorkspaceApi):
         path = self.resolve(q.get('path', [''])[0])
         if os.path.splitext(path)[1].lower() not in formats.EXTENSIONS or not os.path.isfile(path):
             raise MetaError('Choose a supported model file.')
-        if os.path.getsize(path) > (64 << 20):
-            raise MetaError('Interactive preview is limited to 64 MB per file. Metadata editing still works.')
+        if os.path.getsize(path) > MAX_MODEL_BYTES:
+            raise MetaError('Interactive preview is limited to 250 MiB per file. Metadata editing still works.')
         if path.lower().endswith('.3mf'):
             with zipfile.ZipFile(path) as archive:
                 infos = archive.infolist()
-                if len(infos) > 5000 or sum(i.file_size for i in infos) > (256 << 20):
-                    raise MetaError('This 3MF is too large to preview safely (256 MB unpacked limit).')
+                if len(infos) > MAX_3MF_ENTRIES or sum(i.file_size for i in infos) > MAX_3MF_UNPACKED_BYTES:
+                    raise MetaError('This 3MF is too large to preview safely (500 MiB unpacked or 5,000-entry limit).')
         return path
 
     def preview(self, q):
