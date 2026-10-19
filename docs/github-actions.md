@@ -41,6 +41,6 @@ The build workflow does not run the optional large personal-model or GUI suites;
 
 [GitHub hosted runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners) describes the standard runner labels. [GitHub artifact documentation](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/download-workflow-artifacts) explains downloading build artifacts.
 
-The workflow and artifact helper are checked locally, and the Mac build is exercised locally. The first real hosted Windows/Mac run still needs the workflow uploaded to GitHub: this local session has no authenticated GitHub connection and has not dispatched an online build.
+The workflow is installed on main. The [first hosted build](https://github.com/SUP3RMASS1VE/Meshkeep/actions/runs/39340656513) completed successfully on 20 October 2026 for both Apple Silicon Mac and Windows x64, with both installer artifacts available.
 
-Local verification completed: actionlint v1.7.12 passed the workflow; the three CI artifact/tag/checksum tests passed; the updated Mac build completed with 48 Python tests (45 passed, three platform/optional skips), both native-launcher branches passed, and installer/checksum collection succeeded against the real Mac DMG. The hosted Windows build remains pending the first GitHub run.
+Local verification completed: actionlint v1.7.12 passed the workflow; the three CI artifact/tag/checksum tests passed; the updated Mac build completed with 48 Python tests (45 passed, three platform/optional skips), both native-launcher branches passed, and installer/checksum collection succeeded against the real Mac DMG. The hosted Windows and Mac jobs have also both passed.

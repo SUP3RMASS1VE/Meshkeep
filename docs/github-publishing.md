@@ -24,4 +24,4 @@ See the [GitHub Actions guide](github-actions.md) for version tags, automatic bu
 
 Pull or download the latest shared source before editing, preserve both platform branches, then commit/upload changes to GitHub. The hosted build jobs run independently for Apple Silicon Mac and Windows x64. You can also use the local build scripts if desired. There is no automatic update service inside installed Meshkeep apps; users install a new release to update.
 
-The historical [shared-source verification](verification-shared.md) and [Windows verification](verification-windows.md) describe previous builds. The new workflow still needs its first actual GitHub run after upload; local validation is not a claim that hosted builds have already completed.
+The historical [shared-source verification](verification-shared.md) and [Windows verification](verification-windows.md) describe previous builds. The [first hosted Mac and Windows build](https://github.com/SUP3RMASS1VE/Meshkeep/actions/runs/39340656513) completed successfully on 20 October 2026; both installer artifacts are available from that run.
