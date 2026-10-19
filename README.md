@@ -33,7 +33,7 @@ Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. T
 
 ## Install on Windows
 
-Download `Meshkeep-2.0.1-Windows-x64-Setup.exe` from this repository's **Releases** section when available, then open it and follow the installer.
+Download `Meshkeep-2.0.2-Windows-x64-Setup.exe` from this repository's **Releases** section when available, then open it and follow the installer.
 It installs for your Windows account and creates Start menu and desktop shortcuts.
 The app bundles Python and Electron; Python and Node.js are not needed to use it.
 This build is unsigned, so Windows may show an unknown-publisher warning.
@@ -151,7 +151,3 @@ node tests/test_slicer.cjs
 ```
 
 Browser tests use Playwright; see [browser test setup](tests/ui/README.md). Additional verification notes cover the [library and studio](docs/verification-1.1.md), [organisation features](docs/verification-2.0.md), and [3MF painted colours](docs/3mf-colours.md).
-
-## Publishing this project
-
-Use one repository for the shared Mac and Windows source. Upload the `.dmg` and Windows `Setup.exe` separately as assets in the same GitHub Release. See the [publishing guide](docs/github-publishing.md) for what to include.
