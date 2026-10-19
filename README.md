@@ -33,14 +33,14 @@ Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. T
 
 ## Install on Windows
 
-Download `Meshkeep-2.0.2-Windows-x64-Setup.exe` from this repository's **Releases** section when available, then open it and follow the installer.
+Download `Meshkeep-2.0.2-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
 It installs for your Windows account and creates Start menu and desktop shortcuts.
 The app bundles Python and Electron; Python and Node.js are not needed to use it.
 This build is unsigned, so Windows may show an unknown-publisher warning.
 
 ## Install on Mac
 
-1. Download the Apple Silicon `.dmg` from this repository's **Releases** section when a release is available.
+1. Download the Apple Silicon `.dmg` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when a release is available.
 2. Open the `.dmg` and drag **Meshkeep** into **Applications**.
 3. Open **Meshkeep** from Applications.
 
