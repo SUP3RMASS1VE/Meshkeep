@@ -1,0 +1,118 @@
+const { chromium } = require(process.env.MME_PLAYWRIGHT_PATH || 'playwright');
+const assert = require('node:assert/strict');
+(async () => {
+ const browser = await chromium.launch({headless:true, executablePath:process.env.MME_CHROME_PATH || undefined,args:['--enable-webgl','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ const page = await browser.newPage({viewport:{width:1440,height:1000}});
+ global.qaBrowser=browser; global.qaPage=page; page.setDefaultTimeout(12000);
+ const errors=[]; page.on('pageerror',err=>errors.push(String(err)));
+ page.on('console',msg=>{if(msg.type()==='error' && !msg.text().includes('404'))console.log('BROWSER_ERROR',msg.text())});
+ const base=process.env.MME_TEST_URL || 'http://127.0.0.1:18759';
+ const root=(await (await fetch(base+'/api/config?t=qa')).json()).root;
+ await page.goto(base+'/?t=qa');
+ await page.locator('#resultsStatus').filter({hasText:'7 models'}).waitFor();
+ console.log('STEP index');
+ await page.locator('#indexFolder').click();
+ await page.waitForFunction(()=>!document.getElementById('indexFolder').disabled);
+ await page.waitForFunction(()=>document.getElementById('resultsStatus').textContent==='90 models');
+ assert.equal(await page.locator('.filerow').count(),80);
+ await page.locator('#nextPage').click();
+ await page.waitForFunction(()=>document.getElementById('pageStatus').textContent.startsWith('81'));
+ assert.equal(await page.locator('.filerow').count(),10);
+ await page.locator('#searchInput').fill('Someone');
+ await page.waitForFunction(()=>document.getElementById('resultsStatus').textContent==='1 model');
+ assert.match(await page.locator('.filerow .name').textContent(),/Designer/);
+ await page.locator('#searchInput').fill('assembly');
+ await page.waitForFunction(()=>document.querySelector('.filerow .name')?.textContent==='Two-part assembly.3mf');
+ await page.locator('.model-card').click();
+ console.log('STEP studio');
+ await page.locator('#openStudio').click();
+ await page.waitForFunction(()=>document.getElementById('studioPartCount').textContent==='(2)');
+ assert.match(await page.locator('#studioStatus').textContent(),/24 triangles/);
+ assert.match(await page.locator('#studioStatus').textContent(),/50.0/);
+ await page.locator('#studioParts').selectOption('1');
+ assert.match(await page.locator('#studioSelection').textContent(),/Right cube/);
+ const leftPoint = await page.evaluate(async root => {
+   const THREE = await import('three'); const {loadModel,dispose}=await import('/studio.js');
+   const loaded=await loadModel(root+'/Two-part assembly.3mf');
+   const rect=document.querySelector('#studioCanvas canvas').getBoundingClientRect();
+   const camera=new THREE.PerspectiveCamera(38,rect.width/rect.height,.01,10000);
+   const box=new THREE.Box3().setFromObject(loaded.object),radius=box.getSize(new THREE.Vector3()).length()/2;
+   const vertical=THREE.MathUtils.degToRad(38)/2,horizontal=Math.atan(Math.tan(vertical)*camera.aspect);
+   const distance=radius/Math.sin(Math.min(vertical,horizontal))*1.12;
+   camera.position.set(distance*.65,distance*.45,distance*.65).setLength(distance);camera.lookAt(0,0,0);camera.updateMatrixWorld();
+   let first;loaded.object.traverse(mesh=>{if(mesh.isMesh&&!first)first=mesh});
+   const point=new THREE.Box3().setFromObject(first).getCenter(new THREE.Vector3()).project(camera);
+   dispose(loaded.object);return {x:rect.left+(point.x+1)*rect.width/2,y:rect.top+(1-point.y)*rect.height/2};
+ }, root);
+ await page.mouse.click(leftPoint.x,leftPoint.y);
+ assert.match(await page.locator('#studioSelection').textContent(),/Left cube/);
+
+ await page.locator('#studioMaterial').selectOption('metal');
+ await page.locator('#studioLighting').selectOption('dramatic');
+ await page.locator('#studioIsolate').click();
+ await page.screenshot({path:(process.env.MME_SCREENSHOT_DIR || require('node:os').tmpdir())+'/studio.png'});
+ await page.locator('#studioShowAll').click();
+ console.log('STEP capture');
+ await page.locator('#studioCapture').click();
+ await page.waitForFunction(()=>document.getElementById('studioStatus').textContent.startsWith('Library thumbnail saved'));
+ await page.locator('#studioDialog form button').click();
+ await page.locator('#searchInput').fill('');
+ await page.waitForFunction(()=>document.getElementById('resultsStatus').textContent==='90 models');
+ console.log('STEP duplicates');
+ await page.locator('#findDuplicates').click();
+ await page.waitForFunction(()=>!document.getElementById('findDuplicates').disabled);
+ await page.waitForFunction(()=>document.getElementById('duplicateFilter').checked);
+ assert.match(await page.locator('#libraryStatus').textContent(),/exact duplicate files|duplicate groups/);
+ assert.ok(await page.locator('.duplicate-badge').count()>1);
+ await page.locator('#duplicateFilter').uncheck();
+ await page.waitForFunction(()=>document.getElementById('resultsStatus').textContent==='90 models');
+ for(const view of ['list','folders','grid']) {
+   await page.locator(`[data-view=${view}]`).click();
+   assert.ok(await page.locator(`#files.view-${view}`).count());
+ }
+
+ console.log('STEP filters, sorting, tree and preview view');
+ await page.locator('#formatFilter').selectOption('.obj');
+ await page.waitForFunction(()=>document.getElementById('resultsStatus').textContent==='1 model');
+ assert.match(await page.locator('.filerow .name').textContent(),/Display.obj/);
+ await page.locator('#formatFilter').selectOption('');
+ await page.locator('#sortSelect').selectOption('size');
+ await page.locator('#sortDirection').selectOption('1');
+ await page.waitForFunction(()=>state.listing.files.length===80&&state.listing.files.every((f,i,all)=>!i||all[i-1].size>=f.size));
+ await page.locator('#folderTree summary button').filter({hasText:'Parts'}).click();
+ await page.waitForFunction(()=>document.getElementById('resultsStatus').textContent==='83 models');
+ await page.locator('#pathInput').fill(root); await page.locator('#pathForm button[type=submit]').click();
+ await page.waitForFunction(()=>document.getElementById('resultsStatus').textContent==='90 models');
+ await page.locator('#searchInput').fill('assembly');
+ await page.waitForFunction(()=>document.getElementById('resultsStatus').textContent==='1 model');
+ await page.locator('[data-view=preview]').click(); await page.locator('.model-card').click();
+ await page.waitForFunction(()=>document.getElementById('studioPartCount').textContent==='(2)');
+ await page.locator('#studioDialog form button').click();
+ await page.locator('[data-view=grid]').click();
+ console.log('STEP formats');
+ // All supported file families render, using real loaders and WebGL.
+ for(const name of ['Workshop cube.stl','Display.obj','Display.ply','Display.amf']) {
+   await page.locator('#searchInput').fill(name);
+   await page.waitForFunction(name=>document.querySelector('.filerow .name')?.textContent===name,name);
+   await page.locator('.model-card').click(); console.log('STEP studio');
+   await page.locator('#openStudio').click();
+   await page.waitForFunction(()=>document.getElementById('studioStatus').textContent.includes('12 triangles'));
+   await page.locator('#studioDialog form button').click();
+   const pixel = await page.evaluate(async path => {
+     const {thumbnail}=await import('/studio.js'); const png=await thumbnail(path);
+     const img=new Image(); img.src=png; await img.decode();
+     const canvas=document.createElement('canvas');canvas.width=img.width;canvas.height=img.height;
+     const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);
+     return Array.from(ctx.getImageData(Math.floor(img.width/2),Math.floor(img.height/2),1,1).data);
+   },root+'/'+name);
+   assert.ok(Math.max(...pixel.slice(0,3))>70, name+' thumbnail should have lit geometry');
+ }
+ console.log('STEP thumbnails');
+ await page.locator('#searchInput').fill('Display');
+ await page.waitForFunction(()=>document.getElementById('resultsStatus').textContent==='3 models');
+ await page.waitForFunction(()=>document.querySelectorAll('.model-image img:not([hidden])').length===3);
+ await page.screenshot({path:(process.env.MME_SCREENSHOT_DIR || require('node:os').tmpdir())+'/library.png'});
+ assert.deepEqual(errors,[]);
+ console.log('UI_PASS: search, 90-model pagination, filters, all views, hashes, five format loaders, studio parts/materials/lighting/capture, cached thumbnails');
+ await browser.close();
+})().catch(async error=>{console.error(error); if(global.qaPage) { console.log(await global.qaPage.locator('body').innerText()); await global.qaPage.screenshot({path:(process.env.MME_SCREENSHOT_DIR || require('node:os').tmpdir())+'/failure.png'}).catch(()=>{}); } if(global.qaBrowser) await global.qaBrowser.close(); process.exit(1)});

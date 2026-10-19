@@ -1,0 +1,1 @@
+A local-first 3D model library with colour-aware previews, tags, smart collections, print tracking, watched folders and duplicate detection.

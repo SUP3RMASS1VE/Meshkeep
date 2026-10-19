@@ -1,0 +1,33 @@
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Dependencies, Python bytecode and generated build work
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+/build/
+/desktop/dist*/
+/desktop/sidecar-dist*/
+
+# Local agent state, review inputs and prepared exports
+/.agents/
+/.codex/
+/Windows build/
+/github-upload/
+/release-files/
+/Meshkeep-GitHub-Source.zip
+/Meshkeep-Windows-Handoff.md
+/result.json
+
+# Private configuration, local catalogues and runtime logs
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.log

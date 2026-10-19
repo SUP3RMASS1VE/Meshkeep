@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meshkeep</title>
+<link rel="icon" type="image/png" href="/meshkeep-icon.png">
+<link rel="apple-touch-icon" href="/meshkeep-icon.png">
+<link rel="stylesheet" href="/style.css">
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.min.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img class="brand-icon" src="/meshkeep-icon.png" alt="" width="32" height="32">
+    <h1>Meshkeep</h1>
+  </div>
+  <button id="toggleSidebar" class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="folderTree">Library</button>
+  <p class="tagline">Browse, organise and preview your 3D models. Everything stays on this machine.</p>
+</header>
+
+<main class="layout">
+  <aside class="pane folder-sidebar" aria-label="Folder explorer">
+    <div class="pane-head"><strong>Folders</strong><span class="hint">Expand an arrow or choose a folder</span></div>
+    <div class="sidebar-group"><div class="sidebar-title"><span>COLLECTIONS</span><button id="newCollection" class="iconbtn" type="button" aria-label="New collection">+</button></div><nav id="collectionList" aria-label="Collections"></nav></div>
+    <div class="sidebar-group"><div class="sidebar-title"><span>WATCHED FOLDERS</span><button id="watchCurrent" class="iconbtn" type="button" aria-label="Watch current folder">+</button></div><div id="watchList"></div></div>
+    <nav id="folderTree" class="scroll" aria-label="Folder tree"></nav>
+  </aside>
+  <!-- ─────────── browser ─────────── -->
+  <section class="pane browser" aria-label="File browser">
+    <div class="pane-head">
+      <nav class="crumbs" id="crumbs" aria-label="Folder path"></nav>
+      <form class="pathbox" id="pathForm">
+        <input id="pathInput" type="text" placeholder="Jump to a folder or file path…"
+               spellcheck="false" aria-label="Folder or file path">
+        <button type="submit" class="ghost">Go</button><button id="chooseModelFolder" type="button" class="ghost" aria-label="Choose folder">Browse…</button>
+      </form>
+    </div>
+
+    <div class="library-toolbar">
+      <input id="searchInput" type="search" placeholder="Search models…" aria-label="Search models">
+      <div class="toolbar-row">
+        <select id="scopeSelect" aria-label="Search scope"><option value="folder">Current folder</option><option value="library">Indexed folder + subfolders</option></select>
+        <select id="formatFilter" aria-label="Filter by format"><option value="">All formats</option><option>.3mf</option><option>.stl</option><option>.obj</option><option>.ply</option><option>.amf</option></select>
+        <label class="check">Sort by <select id="sortSelect"><option value="name">Name</option><option value="size">Size</option><option value="modified">Modified</option><option value="format">Format</option><option value="title">Title (indexed)</option><option value="designer">Designer (indexed)</option></select></label>
+        <select id="sortDirection" aria-label="Sort direction"><option value="0">Ascending</option><option value="1">Descending</option></select>
+      </div>
+      <div class="toolbar-row filters-row">
+        <select id="tagFilter" aria-label="Filter by tag"><option value="">All tags</option></select>
+        <select id="statusFilter" aria-label="Filter by print status"><option value="">All print states</option><option value="unprinted">Unprinted</option><option value="want">Want to print</option><option value="printed">Printed</option><option value="retry">Needs another attempt</option></select>
+        <label class="check"><input id="geometryFilter" type="checkbox">Matching geometry</label>
+      </div>
+      <div class="toolbar-row">
+        <div id="viewModes" class="view-modes" aria-label="View mode"><button data-view="folders" type="button">Folders</button><button data-view="grid" type="button">Grid</button><button data-view="list" type="button">List</button><button data-view="preview" type="button">Preview</button></div>
+        <span id="resultsStatus" class="hint" role="status" aria-live="polite"></span>
+      </div>
+      <div class="toolbar-row">
+        <button id="indexFolder" type="button" title="Index this folder and all its subfolders; run again to refresh">Index folder</button>
+        <button id="findDuplicates" type="button" title="Hash same-size files in the indexed folder and subfolders">Find duplicates</button>
+        <label class="check"><input id="duplicateFilter" type="checkbox">Duplicates only</label>
+        <button id="findGeometry" type="button" title="Compare mesh geometry across file formats">Compare shapes</button><button id="cancelGeometry" type="button" hidden>Cancel comparison</button>
+        <button id="refreshFolder" class="ghost" type="button">Refresh</button>
+      </div>
+      <span id="libraryStatus" class="hint"></span><span id="geometryProgress" class="hint" role="status"></span>
+      <pre id="jobErrors" class="job-errors" hidden></pre>
+    </div>
+    <div class="scroll" id="listScroll">
+      <ul class="dirlist" id="dirs"></ul>
+      <ul class="filelist" id="files"></ul>
+      <p class="empty" id="listEmpty" hidden>No supported model files in this folder.</p>
+    </div>
+
+    <div class="pane-foot pagination"><button id="previousPage" type="button">Previous</button><span id="pageStatus"></span><button id="nextPage" type="button">Next</button></div>
+    <div class="pane-foot" id="selectionBar" hidden>
+      <span id="selectionCount">0 selected</span>
+      <button id="batchOrganize" class="ghost" type="button">Organise selected</button><button id="batchSlicer" class="ghost" type="button">Send to slicer</button>
+      <button class="ghost" id="clearSelection" type="button">Clear</button>
+    </div>
+  </section>
+
+  <!-- ─────────── editor ─────────── -->
+  <section class="pane editor" aria-label="Metadata editor">
+    <div class="placeholder" id="placeholder">
+      <h2>Pick a file to start</h2>
+      <p>Choose a model on the left. Tick several files to change the designer or licence on all of them at once.</p>
+    </div>
+
+    <!-- single-file editor -->
+    <div id="single" hidden>
+      <div class="filehead">
+        <img id="thumb" class="thumb" alt="Embedded thumbnail" hidden>
+        <div class="filehead-main">
+          <form class="renamerow" id="renameForm">
+            <input id="fileName" type="text" spellcheck="false" aria-label="File name">
+            <button type="submit" class="ghost" id="renameBtn" disabled>Rename file</button>
+          </form>
+          <div class="badges" id="badges"></div>
+        </div>
+      </div>
+
+      <div class="studio-launch"><button id="sendToSlicer" class="slicer-button" type="button">Send to slicer ↗</button><button id="openStudio" class="primary" type="button">Open 3D studio</button><span class="hint">Orbit, inspect parts and adjust the preview</span></div>
+      <p id="slicerStatus" class="hint"></p>
+      <section class="organize-panel" aria-label="Library details">
+        <div class="section-title"><h3>IN YOUR LIBRARY</h3><span class="local-badge">Saved locally</span></div>
+        <label>Print status<select id="modelStatus"><option value="unprinted">Unprinted</option><option value="want">Want to print</option><option value="printed">Printed</option><option value="retry">Needs another attempt</option></select></label>
+        <label>Tags<input id="modelTags" type="text" placeholder="miniatures, terrain, weekend project"></label>
+        <label>Library notes<textarea id="modelNotes" rows="2" placeholder="Ideas, reminders, things to change…"></textarea></label>
+        <button id="saveOrganization" type="button" class="primary">Save library details</button>
+        <div class="toolbar-row"><select id="memberCollection" aria-label="Add to collection"></select><button id="addMembership" type="button">Add</button><button id="removeMembership" type="button" hidden>Remove from collection</button></div>
+        <div class="section-title"><h3>PRINT JOURNAL</h3><button id="newPrint" type="button" class="ghost">+ Log a print</button></div>
+        <div id="printHistory" class="print-history"></div>
+      </section>
+      <div class="notes" id="notes"></div>
+
+      <div class="section">
+        <h3>Model details</h3>
+        <div class="fields" id="fields"></div>
+        <p class="budget" id="budget" hidden></p>
+      </div>
+
+      <div class="section" id="coverSection" hidden>
+        <h3>Thumbnail / cover image <span class="sub">what slicers and file browsers show</span></h3>
+        <div id="coverControls">
+          <div class="cover-grid">
+            <figure>
+              <div class="cover-box">
+                <img id="coverCurrent" alt="Image currently in the file" hidden>
+                <span class="cover-empty" id="coverNone">No embedded image</span>
+              </div>
+              <figcaption>In the file</figcaption>
+            </figure>
+            <figure>
+              <div class="cover-box">
+                <img id="coverPreview" alt="New image preview" hidden>
+                <span class="cover-empty" id="coverPreviewNone">Choose an image to preview it</span>
+              </div>
+              <figcaption>After saving</figcaption>
+            </figure>
+          </div>
+          <div class="cover-row">
+            <button type="button" class="ghost" id="coverPick">Choose image…</button>
+            <input type="file" id="coverFile" accept="image/png,image/jpeg,image/webp" hidden>
+            <label class="check">Shape
+              <select id="coverFit">
+                <option value="fit">Fit (letterbox)</option>
+                <option value="fill">Fill (crop to square)</option>
+              </select>
+            </label>
+            <button type="button" class="ghost danger" id="coverRemove">Remove image</button>
+            <button type="button" class="ghost" id="coverUndo" hidden>Undo</button>
+          </div>
+          <p class="hint" id="coverStatus" aria-live="polite"></p>
+          <p class="hint" id="coverHint"></p>
+        </div>
+        <p class="note" id="coverUnsupported" hidden>STL, OBJ, PLY and AMF files can't hold an image. Save the project as 3MF in your slicer to add a cover.</p>
+      </div>
+
+      <div class="section" id="objectsSection" hidden>
+        <h3>Object &amp; part names <span class="sub">shown in your slicer</span></h3>
+        <div class="fields" id="objects"></div>
+      </div>
+
+      <div class="section" id="customSection" hidden>
+        <h3>Other metadata</h3>
+        <div class="customlist" id="custom"></div>
+        <button class="ghost" id="addCustom" type="button">Add field</button>
+        <p class="hint">3MF keeps non-standard keys namespaced, like <code>MyStudio:Batch</code>. Keys your slicer wrote (<code>OrcaSlicer</code>, <code>Thumbnail_Middle</code>) are passed through untouched — removing one can change how the slicer opens the file, so leave them be unless you know what they do.</p>
+      </div>
+
+      <div class="actions">
+        <label class="check"><input type="checkbox" id="backup" checked> Keep a <code>.bak</code> of the original</label>
+        <label class="check" id="fastWrap" hidden><input type="checkbox" id="fast"> Faster save, larger file</label>
+        <div class="spacer"></div>
+        <button class="ghost" id="discardBtn" type="button" hidden>Delete backup</button>
+        <button class="ghost danger" id="revertBtn" type="button" hidden>Restore backup</button>
+        <button class="primary" id="saveBtn" type="button">Save changes</button>
+      </div>
+    </div>
+
+    <!-- batch editor -->
+    <div id="batch" hidden>
+      <h2 id="batchTitle">Edit several files</h2>
+      <p class="hint">Only the fields you fill in are written. Everything else in each file is left alone. Fields a format cannot store are skipped and reported.</p>
+      <ul class="batchfiles" id="batchFiles"></ul>
+      <div class="section">
+        <div class="fields" id="batchFields"></div>
+      </div>
+      <div class="actions">
+        <label class="check"><input type="checkbox" id="batchBackup" checked> Keep a <code>.bak</code> of each original</label>
+        <label class="check"><input type="checkbox" id="batchFast"> Faster save, larger files</label>
+        <div class="spacer"></div>
+        <button class="primary" id="batchBtn" type="button">Apply to all</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" hidden role="status" aria-live="polite">
+  <div class="toast-row">
+    <span id="toastMsg">Working…</span>
+    <button class="ghost" id="toastClose" type="button" hidden>Close</button>
+  </div>
+  <div class="bar"><div class="bar-fill" id="toastBar"></div></div>
+</div>
+
+<dialog id="studioDialog" class="studio-dialog" aria-labelledby="studioTitle">
+  <div class="studio-header"><div><h2 id="studioTitle">3D Preview Studio</h2><p id="studioFilename" class="hint"></p></div><form method="dialog"><button type="submit" aria-label="Close 3D studio">Close</button></form></div>
+  <div class="studio-body">
+    <div class="studio-stage"><div id="studioCanvas"></div><p id="studioStatus" role="status" aria-live="polite"></p><span class="studio-help">Drag to orbit · Scroll to zoom · Right-drag to pan · Click a part to select</span></div>
+    <aside class="studio-controls">
+      <h3>View</h3><button id="studioFit" type="button">Fit model</button><button id="studioReset" type="button">Reset appearance</button>
+      <label>Lighting<select id="studioLighting"><option value="soft">Softbox</option><option value="bright">Bright</option><option value="dramatic">Dramatic</option></select></label>
+      <label>Material<select id="studioMaterial"><option value="original">Original colours</option><option value="matte">Matte</option><option value="metal">Metal</option><option value="gloss">Gloss</option></select></label>
+      <label>Colour<input id="studioColor" type="color" value="#82b8ed"></label>
+      <label>Exposure<input id="studioExposure" type="range" min="0.3" max="2.5" step="0.1" value="1"></label>
+      <label class="check"><input id="studioWireframe" type="checkbox">Wireframe</label>
+      <h3>Inspect</h3><div id="studioDimensions" class="inspection-stats">Open a model to inspect it</div><p id="studioVolume" class="hint"></p>
+      <button id="studioMeasure" type="button">Measure distance</button><button id="studioClearMeasure" type="button" hidden>Clear measurement</button><p id="studioMeasurement" class="hint" role="status"></p>
+      <h3>Parts <span id="studioPartCount"></span></h3><span class="hint">Select a part to adjust its material. Hide other parts with Isolate.</span>
+      <select id="studioParts" size="6" aria-label="Model parts"></select>
+      <div class="toolbar-row"><button id="studioIsolate" type="button" disabled>Isolate</button><button id="studioShowAll" type="button">Show all</button></div>
+      <button id="studioEditName" type="button" hidden>Edit part name</button>
+      <p id="studioSelection" class="hint">No part selected</p>
+      <p class="hint">Appearance changes affect this preview. Model files are unchanged.</p>
+      <button id="studioCapture" type="button" disabled>Use view as library thumbnail</button>
+    </aside>
+  </div>
+</dialog>
+<dialog id="collectionDialog" class="workspace-dialog" aria-labelledby="collectionTitle"><form id="collectionForm">
+  <div class="dialog-heading"><h2 id="collectionTitle">New collection</h2><button type="button" data-close="collectionDialog" aria-label="Close collection dialog">×</button></div>
+  <p class="hint">Keep models together without moving the original files.</p>
+  <label>Name<input id="collectionName" type="text" maxlength="100" required placeholder="Weekend miniatures"></label>
+  <label>Collection type<select id="collectionKind"><option value="manual">Hand-picked models</option><option value="smart">Smart collection — saved rules</option></select></label>
+  <div id="smartRules" hidden><label>Search<input id="ruleSearch" type="text" placeholder="Optional filename or description"></label><label>Tag<input id="ruleTag" type="text" placeholder="miniatures"></label>
+    <label>Print status<select id="ruleStatus"><option value="">Any status</option><option value="unprinted">Unprinted</option><option value="want">Want to print</option><option value="printed">Printed</option><option value="retry">Needs another attempt</option></select></label>
+    <label>Designer contains<input id="ruleDesigner" type="text"></label><label>Format<select id="ruleFormat"><option value="">Any format</option><option>.3mf</option><option>.stl</option><option>.obj</option><option>.ply</option><option>.amf</option></select></label>
+    <p class="hint">Every rule must match. Membership updates as your library changes.</p></div>
+  <p id="collectionError" class="form-error" role="alert"></p><button class="primary" type="submit">Create collection</button>
+</form></dialog>
+<dialog id="printDialog" class="workspace-dialog" aria-labelledby="printTitle"><form id="printForm">
+  <div class="dialog-heading"><h2 id="printTitle">Log a print</h2><button type="button" data-close="printDialog" aria-label="Close print dialog">×</button></div>
+  <label>Result<select id="printOutcome"><option value="printed">Printed successfully</option><option value="retry">Needs another attempt</option></select></label>
+  <div class="two-fields"><label>Printer<input id="printPrinter" type="text" placeholder="e.g. Bambu P1S"></label><label>Material<input id="printMaterial" type="text" placeholder="e.g. PLA, matte blue"></label></div>
+  <label>Settings<textarea id="printSettings" rows="3" placeholder="Layer height, nozzle, temperatures, supports…"></textarea></label>
+  <label>Notes<textarea id="printNotes" rows="3" placeholder="How did it turn out?"></textarea></label>
+  <label>Finished-print photos<input id="printPhotos" type="file" accept="image/png,image/jpeg,image/webp" multiple></label><div id="printPhotoPreviews" class="photo-previews"></div><p class="hint">Up to three photos. Images are resized and stored locally.</p>
+  <p id="printError" class="form-error" role="alert"></p><button id="savePrint" class="primary" type="submit">Save print record</button>
+</form></dialog>
+<dialog id="batchOrganizeDialog" class="workspace-dialog" aria-labelledby="batchOrganizeTitle"><form id="batchOrganizeForm">
+  <div class="dialog-heading"><h2 id="batchOrganizeTitle">Organise selected models</h2><button type="button" data-close="batchOrganizeDialog" aria-label="Close batch dialog">×</button></div>
+  <label>Add tags<input id="batchTags" type="text" placeholder="Comma-separated tags"></label>
+  <label>Print status<select id="batchStatus"><option value="">Leave unchanged</option><option value="unprinted">Unprinted</option><option value="want">Want to print</option><option value="printed">Printed</option><option value="retry">Needs another attempt</option></select></label>
+  <label>Add to collection<select id="batchCollection"></select></label>
+  <p id="batchOrganizeError" class="form-error" role="alert"></p><button class="primary" type="submit">Apply to selected models</button>
+</form></dialog>
+<dialog id="photoDialog" class="photo-dialog" aria-label="Finished print photo"><button type="button" data-close="photoDialog" aria-label="Close photo">Close</button><img id="fullPrintPhoto" alt="Finished print"></dialog>
+<script src="/workspace.js"></script>
+<script src="/browser.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

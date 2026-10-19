@@ -22,14 +22,21 @@ Your models stay in their original folders. Tags, collections and print records 
 - **See painted 3MF colours:** Bambu/Orca filament palettes and painted regions, including subdivided colour boundaries.
 - **Inspect models:** dimensions, triangle counts, estimated solid volume and point-to-point measurements.
 - **Find duplicates:** exact content hashes and geometry matching, including renamed copies.
-- **Send to your slicer:** open selected models in your chosen slicer from the Mac desktop app.
+- **Send to your slicer:** open selected models in your chosen slicer from the Mac or Windows desktop app.
 - **Edit metadata:** update supported names, authorship and other metadata; add a custom 3MF cover image.
 
 ## Supported formats and platforms
 
 Meshkeep browses and previews **3MF, STL, OBJ, PLY and AMF** files. Metadata fields and editing support vary by format.
 
-The current packaged release is **Meshkeep 2.0.1 for Apple Silicon Macs**. A Windows version is planned; this source tree does not yet include a completed Windows port or installer.
+Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.2**, which removes the legacy browser launcher. The Windows 2.0.1 installer remains available; a Windows 2.0.2 installer must be rebuilt on Windows.
+
+## Install on Windows
+
+Download `Meshkeep-2.0.1-Windows-x64-Setup.exe` from this repository's **Releases** section when available, then open it and follow the installer.
+It installs for your Windows account and creates Start menu and desktop shortcuts.
+The app bundles Python and Electron; Python and Node.js are not needed to use it.
+This build is unsigned, so Windows may show an unknown-publisher warning.
 
 ## Install on Mac
 
@@ -69,15 +76,20 @@ See the [full user guide](docs/user-guide.md) for collection rules, print tracki
 
 ## Local storage and privacy
 
-Meshkeep stores its catalogue, organisation data and cached previews on your Mac. Its local server listens on `127.0.0.1` and uses a fresh authentication token on each launch. Three.js is bundled, so model rendering works offline.
+Meshkeep stores its catalogue, organisation data and cached previews on your computer. Its local server listens on `127.0.0.1` and uses a fresh authentication token on each launch. Three.js is bundled, so model rendering works offline.
 
-The default catalogue is:
+On Mac, the default catalogue is:
 
 ```text
 ~/Library/Application Support/Meshkeep/catalogue.sqlite3
 ```
 
 Older installations continue using `~/Library/Application Support/Model Meta Editor/catalogue.sqlite3` when present. Existing desktop preferences are retained after the rename to Meshkeep.
+
+On Windows the catalogue is `%LOCALAPPDATA%\Meshkeep\catalogue.sqlite3`.
+Desktop preferences are under `%APPDATA%\Meshkeep`. Native folder selection and
+slicer sending are restricted to models inside your Windows home folder.
+Copying the source from a Mac does not transfer the Mac catalogue.
 
 Tags, collections and print history live in the catalogue; they are not embedded into the model files. Back up the application data as well as your model folders to retain these records. Organisation and preview controls do not rewrite original models; saving metadata or an embedded cover image is an explicit file edit. Duplicate detection never deletes files automatically.
 
@@ -91,17 +103,7 @@ Tags, collections and print history live in the catalogue; they are not embedded
 - Geometry matching compares mesh equivalence. Arbitrary rotation, scaling and different triangulations may not match.
 - Watched folders update while Meshkeep is running. External renames are treated as a removal and addition.
 
-## Run from source
-
-With Python 3 installed, run this from the project folder on macOS:
-
-```sh
-python3 app.py
-```
-
-Or double-click `Meshkeep.command`. Source mode opens the interface in your browser. The Python server uses the standard library; browser-only runs do not include native slicer launching.
-
-## Build the Mac app
+## Build the Mac desktop app
 
 On an Apple Silicon Mac, install Node.js 18 or later and Xcode Command Line Tools with Python 3, then run:
 
@@ -112,11 +114,27 @@ On an Apple Silicon Mac, install Node.js 18 or later and Xcode Command Line Tool
 The script builds the Python sidecar using PyInstaller, smoke-tests it, installs the locked Electron dependencies and packages the app. Re-running it rebuilds the generated outputs in `desktop/dist/`:
 
 ```text
-Meshkeep-2.0.1-arm64.dmg
+Meshkeep-2.0.2-arm64.dmg
 mac-arm64/Meshkeep.app
 ```
 
-For the pending Windows port, see the [Windows handoff](Meshkeep-Windows-Handoff.md).
+## Build the Windows desktop app
+
+On Windows x64 with x64 Python 3.11 and Node.js (including npm) on PATH:
+
+```powershell
+powershell -NoProfile -File .\build-windows.ps1
+```
+
+The script creates `build/pyenv-win`, generates the existing artwork as a Windows
+icon, builds the bundled server, runs source and packaged regression tests,
+installs locked Electron dependencies in `build/windows-desktop`, and builds an
+NSIS installer in `desktop/dist-win/`. Mac dependencies and outputs are preserved.
+Only Windows resource tools are extracted, so Windows symlink privileges are not
+required. Internet access is needed for the first build. If Node is available
+without npm on PATH, pass `-NpmCli C:/path/to/npm/bin/npm-cli.js`.
+
+See [Windows verification](docs/verification-windows.md) for tested coverage and limitations.
 
 ## Tests and technical notes
 
@@ -133,3 +151,7 @@ node tests/test_slicer.cjs
 ```
 
 Browser tests use Playwright; see [browser test setup](tests/ui/README.md). Additional verification notes cover the [library and studio](docs/verification-1.1.md), [organisation features](docs/verification-2.0.md), and [3MF painted colours](docs/3mf-colours.md).
+
+## Publishing this project
+
+Use one repository for the shared Mac and Windows source. Upload the `.dmg` and Windows `Setup.exe` separately as assets in the same GitHub Release. See the [publishing guide](docs/github-publishing.md) for what to include.
