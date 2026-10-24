@@ -17,7 +17,16 @@
   </div>
   <button id="toggleSidebar" class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="folderTree">Library</button>
   <p class="tagline">Browse, organise and preview your 3D models. Everything stays on this machine.</p>
+  <button id="checkUpdates" class="ghost update-check" type="button" hidden>Check for updates</button>
 </header>
+
+<section id="updateBanner" class="update-banner" aria-label="App update" hidden>
+  <div class="update-copy"><strong id="updateTitle"></strong><p id="updateMessage" role="status" aria-live="polite"></p></div>
+  <progress id="updateProgress" max="100" value="0" aria-label="Update download progress" hidden></progress>
+  <button id="updateAction" class="primary" type="button" hidden></button>
+  <button id="updateRelease" class="ghost" type="button" hidden>View release</button>
+  <button id="dismissUpdate" class="ghost" type="button" aria-label="Dismiss update notice">Later</button>
+</section>
 
 <main class="layout">
   <aside class="pane folder-sidebar" aria-label="Folder explorer">
@@ -254,6 +263,7 @@
   <p id="batchOrganizeError" class="form-error" role="alert"></p><button class="primary" type="submit">Apply to selected models</button>
 </form></dialog>
 <dialog id="photoDialog" class="photo-dialog" aria-label="Finished print photo"><button type="button" data-close="photoDialog" aria-label="Close photo">Close</button><img id="fullPrintPhoto" alt="Finished print"></dialog>
+<script src="/updates.js"></script>
 <script src="/workspace.js"></script>
 <script src="/browser.js"></script>
 <script src="/app.js"></script>

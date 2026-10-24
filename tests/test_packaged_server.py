@@ -55,7 +55,7 @@ class PackagedServerTests(unittest.TestCase):
                         data=None if body is None else json.dumps(body).encode())
                     with urllib.request.urlopen(req, timeout=10) as response:
                         return response.read()
-                for asset in ('/', '/meshkeep-icon.png', '/workspace.js', '/geometry.js', '/analysis-worker.js', '/browser.js', '/studio.js', '/threemf.js', '/vendor/three/build/three.module.min.js',
+                for asset in ('/', '/meshkeep-icon.png', '/workspace.js', '/updates.js', '/geometry.js', '/analysis-worker.js', '/browser.js', '/studio.js', '/threemf.js', '/vendor/three/build/three.module.min.js',
                               '/vendor/three/build/three.core.min.js', '/vendor/three/examples/jsm/controls/OrbitControls.js'):
                     self.assertTrue(request(asset), asset)
                 self.assertIn(b'<title>Meshkeep</title>', request('/'))

@@ -21,9 +21,10 @@ echo "==> 2/3 Testing source, bundled server and native bridge"
 MME_PACKAGED_SERVER="$PWD/desktop/sidecar-dist/mme-server/mme-server" \
   build/pyenv/bin/python -m unittest discover -s tests -v
 node tests/test_slicer.cjs
+node --test tests/test_updater.cjs tests/test_update_bridge.cjs tests/test_update_ui.cjs
 
 echo "==> 3/3 Packaging Electron app"
-(cd desktop && npm ci && npx electron-builder --mac --arm64 --publish never)
+(cd desktop && npm ci && npx electron-builder --config electron-builder.mac.cjs --mac --arm64 --publish never)
 
 echo
 echo "Done:"

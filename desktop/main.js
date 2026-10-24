@@ -17,6 +17,7 @@ let sidecar = null;
 let win = null;
 let stderrTail = "";
 let trustedOrigin = null;
+let updates = null;
 
 function sidecarCommand() {
   const args = ["--electron", "--root", os.homedir(), "--port", "8756"];
@@ -107,14 +108,78 @@ function insideHome(file, home) {
   return relative === '' || (relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative));
 }
 
+function trusted(event) {
+  if (!win || event.sender !== win.webContents || event.senderFrame !== win.webContents.mainFrame ||
+      new URL(event.senderFrame.url).origin !== trustedOrigin) throw new Error('Untrusted app window.');
+}
+
+function installUpdateBridge() {
+  const {autoUpdater} = require('electron-updater');
+  const {createUpdater} = require('./updater');
+  const enabled = app.isPackaged && ['darwin', 'win32'].includes(process.platform);
+  let canInstall = enabled;
+  if (enabled && process.platform === 'darwin') {
+    try {
+      // Squirrel.Mac requires an actual Developer ID identity on the running
+      // application. Ad-hoc and unsigned builds can still check for releases.
+      const result = require('child_process').spawnSync('/usr/bin/codesign', ['-dv', '--verbose=4', process.execPath], {encoding: 'utf8', timeout: 5000});
+      canInstall = result.status === 0 && /Authority=Developer ID Application:/.test(result.stderr || '');
+    } catch (_) { canInstall = false; }
+  }
+  let stoppedForUpdate = false;
+  autoUpdater.on('error', () => {
+    if (!stoppedForUpdate) return;
+    stoppedForUpdate = false;
+    dialog.showErrorBox('Update could not be installed', 'Meshkeep will reopen. You can retry the update or download the installer from Releases.');
+    app.relaunch();
+    app.quit();
+  });
+  updates = createUpdater({autoUpdater, currentVersion: app.getVersion(), enabled, canInstall,
+    publish(state) {
+      if (win && !win.isDestroyed()) {
+        if (new URL(win.webContents.getURL() || 'about:blank').origin === trustedOrigin) {
+          win.webContents.send('meshkeep:updateState', state);
+        }
+        win.setProgressBar(state.status === 'downloading' ? state.percent / 100 : -1);
+      }
+    },
+    async confirmInstall() {
+      const result = await dialog.showMessageBox(win, {type: 'question', title: 'Install Meshkeep update',
+        message: 'Restart Meshkeep to install the update?',
+        detail: 'Save any unfinished edits before continuing.',
+        buttons: ['Cancel', 'Restart and install'], defaultId: 0, cancelId: 0});
+      return result.response === 1;
+    },
+    async beforeInstall() {
+      if (process.platform !== 'win32') return;
+      // Windows cannot replace the bundled Python executable while it is running.
+      const proc = sidecar;
+      if (!proc || proc.exitCode !== null) return;
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          proc.removeListener('exit', finish);
+          reject(new Error('The background server did not stop. Restart Meshkeep and try again.'));
+        }, 6000);
+        function finish() { clearTimeout(timer); stoppedForUpdate = true; resolve(); }
+        proc.once('exit', finish);
+        killSidecar();
+      });
+    },
+  });
+  ipcMain.handle('meshkeep:updateStatus', event => { trusted(event); return updates.getState(); });
+  ipcMain.handle('meshkeep:checkUpdate', event => { trusted(event); return updates.check(); });
+  ipcMain.handle('meshkeep:downloadUpdate', event => { trusted(event); return updates.download(); });
+  ipcMain.handle('meshkeep:installUpdate', event => { trusted(event); return updates.install(); });
+  ipcMain.handle('meshkeep:updateRelease', event => {
+    trusted(event);
+    return shell.openExternal('https://github.com/SUP3RMASS1VE/Meshkeep/releases/latest');
+  });
+}
+
 function installWorkspaceBridge() {
   const settingsPath = path.join(app.getPath('userData'), 'meshkeep-slicer.json');
   let slicerPath = null;
   try { slicerPath = JSON.parse(fs.readFileSync(settingsPath, 'utf8')).path; } catch (_) {}
-  function trusted(event) {
-    if (!win || event.sender !== win.webContents || event.senderFrame !== win.webContents.mainFrame ||
-        new URL(event.senderFrame.url).origin !== trustedOrigin) throw new Error('Untrusted app window.');
-  }
   const status = () => ({name: slicerPath ? path.basename(slicerPath).replace(/\.(app|exe)$/i, '') : null, available: !!slicerPath && fs.existsSync(slicerPath)});
   ipcMain.handle('meshkeep:slicer', event => { trusted(event); return status(); });
   ipcMain.handle('meshkeep:chooseFolder', async event => {
@@ -200,6 +265,14 @@ function buildMenu() {
     },
     { role: "windowMenu" },
   ];
+  template[0].submenu.splice(1, 0, {label: 'Check for Updates…', click: () => {
+    if (win && updates) {
+      win.show();
+      win.focus();
+      win.webContents.send('meshkeep:showUpdates');
+      void updates.check();
+    }
+  }});
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
@@ -220,7 +293,10 @@ function createWindow(url) {
       preload: path.join(__dirname, "preload.js"),
     },
   });
-  win.once("ready-to-show", () => win.show());
+  win.once("ready-to-show", () => {
+    win.show();
+    if (updates) setTimeout(() => { void updates.check(); }, 1500).unref();
+  });
 
   win.webContents.setWindowOpenHandler(({ url: target }) => {
     if (/^https?:/.test(target) && new URL(target).origin !== origin) {
@@ -251,6 +327,7 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(async () => {
     buildMenu();
     installWorkspaceBridge();
+    installUpdateBridge();
     // No downloads exist today; save via the standard dialog if one appears.
     session.defaultSession.on("will-download", (_event, item) => {
       item.setSaveDialogOptions({ defaultPath: path.join(os.homedir(), "Downloads", item.getFilename()) });

@@ -29,11 +29,11 @@ Your models stay in their original folders. Tags, collections and print records 
 
 Meshkeep browses and previews **3MF, STL, OBJ, PLY and AMF** files. Metadata fields and editing support vary by format.
 
-Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.3**, which raises preview limits to 250 MiB per model and 500 MiB unpacked for 3MF. GitHub Actions can build both installers with these higher limits.
+Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.4**, which adds GitHub release checks and in-app updates. Preview limits remain 250 MiB per model and 500 MiB unpacked for 3MF.
 
 ## Install on Windows
 
-Download `Meshkeep-2.0.3-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
+Download `Meshkeep-2.0.4-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
 It installs for your Windows account and creates Start menu and desktop shortcuts.
 The app bundles Python and Electron; Python and Node.js are not needed to use it.
 This build is unsigned, so Windows may show an unknown-publisher warning.
@@ -48,7 +48,7 @@ The packaged app includes its runtime. You do not need to install Python or Node
 
 ### First launch: macOS Gatekeeper
 
-**The current Mac build is not Developer ID signed or notarised by Apple.** macOS Gatekeeper may block it on first launch because Apple cannot verify its developer.
+**Mac builds produced without the signing secrets are not Developer ID signed or notarised by Apple.** macOS Gatekeeper may block it on first launch because Apple cannot verify its developer.
 
 If you trust the download and want to open it:
 
@@ -63,6 +63,14 @@ Selecting **App Store and identified developers** alone does not approve this un
 Only approve a download you trust. These steps are for an unidentified-developer or unnotarised-app warning; they are not a workaround for an alert saying an app contains malware or is damaged. On a managed Mac, your administrator may restrict these options.
 
 See [Apple's guide to opening apps safely](https://support.apple.com/en-gb/102445) for the official instructions.
+
+## App updates
+
+The installed app checks public GitHub Releases when it opens. A newer stable release appears in a banner. Choose **Download update**, keep working while it downloads, then choose **Restart and install** when ready. **Later** dismisses the notice; **Check for updates** in the header or app menu brings it back. Network failures during the startup check do not interrupt your work.
+
+Windows supports downloading and installing from the app. Mac in-app installation requires a Developer ID signed build; unsigned Mac builds check for updates and offer **View release** for manual installation. Signing support is included in the build workflow. See [auto-update setup](docs/auto-updates.md) for the signing secrets, required release assets and end-to-end verification.
+
+Users of 2.0.3 or earlier need to install 2.0.4 manually once. Unsigned Mac users must also manually install the first signed version before they can receive signed in-app updates.
 
 ## Getting started
 
@@ -109,7 +117,7 @@ See [higher-limit verification](docs/higher-preview-limits.md) for the tested la
 
 GitHub can build the Mac and Windows installers for you; no local compilation is needed.
 
-Open **Actions → Build desktop apps → Run workflow**. When the run completes, download the Mac or Windows installer from its **Artifacts** section. Tick **Create a draft release with both installers** when running from `main` to prepare a release with both downloads and checksums.
+Open **Actions → Build desktop apps → Run workflow**. When the run completes, download the Mac or Windows installer from its **Artifacts** section. Tick **Create a draft release with both installers** when running from `main` to prepare a release with both installers, update metadata, the Mac ZIP and checksums.
 
 Pushes to `main`/`master` also prepare a draft release automatically after both builds pass. Pull requests build without creating a release. See the [GitHub Actions guide](docs/github-actions.md) for setup, version tags and publishing the draft.
 
@@ -124,7 +132,7 @@ On an Apple Silicon Mac, install Node.js 18 or later and Xcode Command Line Tool
 The script builds the Python sidecar using PyInstaller, smoke-tests it, installs the locked Electron dependencies and packages the app. Re-running it rebuilds the generated outputs in `desktop/dist/`:
 
 ```text
-Meshkeep-2.0.3-arm64.dmg
+Meshkeep-2.0.4-arm64.dmg
 mac-arm64/Meshkeep.app
 ```
 
@@ -158,6 +166,7 @@ Test the native slicer bridge with a fake launcher:
 
 ```sh
 node tests/test_slicer.cjs
+node --test tests/test_updater.cjs tests/test_update_bridge.cjs tests/test_update_ui.cjs
 ```
 
 Browser tests use Playwright; see [browser test setup](tests/ui/README.md). Additional verification notes cover the [library and studio](docs/verification-1.1.md), [organisation features](docs/verification-2.0.md), and [3MF painted colours](docs/3mf-colours.md).

@@ -1,4 +1,4 @@
-"""Validate versioned CI installers and prepare checksums (standard library only)."""
+"""Validate versioned installers/update assets and prepare release checksums."""
 import hashlib
 import json
 import os
@@ -40,17 +40,36 @@ def digest(path):
     return result.hexdigest()
 
 
+def required_names(platform, value):
+    installer = installer_name(platform, value)
+    if platform == 'macos-arm64':
+        return [installer, f'Meshkeep-{value}-arm64.zip', 'latest-mac.yml']
+    return [installer, 'latest.yml']
+
+
+def optional_names(platform, value):
+    return [name + '.blockmap' for name in required_names(platform, value)
+            if not name.endswith('.yml')]
+
+
 def collect(root, platform):
     value = version(root)
-    name = installer_name(platform, value)
-    source = root / 'desktop' / ('dist' if platform == 'macos-arm64' else 'dist-win') / name
-    if not source.is_file() or not source.stat().st_size:
-        raise ValueError('Installer missing or empty: ' + str(source))
+    folder = root / 'desktop' / ('dist' if platform == 'macos-arm64' else 'dist-win')
+    names = required_names(platform, value)
+    names += [name for name in optional_names(platform, value) if (folder / name).exists()]
+    for name in names:
+        source = folder / name
+        if not source.is_file() or not source.stat().st_size:
+            raise ValueError('Release asset missing or empty: ' + str(source))
     destination = root / OUTPUT
     destination.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, destination / name)
-    (destination / f'SHA256SUMS-{platform}.txt').write_text(f'{digest(source)}  {name}\n')
-    return name
+    lines = []
+    for name in names:
+        source = folder / name
+        shutil.copy2(source, destination / name)
+        lines.append(f'{digest(source)}  {name}\n')
+    (destination / f'SHA256SUMS-{platform}.txt').write_text(''.join(lines))
+    return installer_name(platform, value)
 
 
 def combine(root):
@@ -58,11 +77,19 @@ def combine(root):
     folder = root / OUTPUT
     lines = []
     for platform in ['macos-arm64', 'windows-x64']:
-        name = installer_name(platform, value)
-        expected = f'{digest(folder / name)}  {name}\n'
-        if (folder / f'SHA256SUMS-{platform}.txt').read_text() != expected:
-            raise ValueError('Installer checksum mismatch: ' + name)
-        lines.append(expected)
+        required = required_names(platform, value)
+        allowed = set(required + optional_names(platform, value))
+        seen = set()
+        for line in (folder / f'SHA256SUMS-{platform}.txt').read_text().splitlines():
+            checksum, name = line.split('  ', 1)
+            if name not in allowed or name in seen:
+                raise ValueError('Unexpected or duplicate release asset: ' + name)
+            if not (folder / name).stat().st_size or digest(folder / name) != checksum:
+                raise ValueError('Release asset checksum mismatch: ' + name)
+            seen.add(name)
+            lines.append(line + '\n')
+        if not set(required).issubset(seen):
+            raise ValueError('Missing installer or update metadata for ' + platform)
     (folder / 'SHA256SUMS.txt').write_text(''.join(lines))
 
 

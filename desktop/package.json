@@ -1,7 +1,7 @@
 {
   "name": "meshkeep",
   "productName": "Meshkeep",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Browse, organise and preview your 3D models",
   "main": "main.js",
   "private": true,
@@ -23,6 +23,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "updater.js",
       "package.json",
       "build/icon.ico"
     ],
@@ -50,7 +51,8 @@
           "from": "sidecar-dist/mme-server",
           "to": "mme-server"
         }
-      ]
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "dmg": {
       "icon": "build/icon.icns"
@@ -82,6 +84,21 @@
       "createStartMenuShortcut": true,
       "runAfterFinish": false,
       "deleteAppDataOnUninstall": false
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "SUP3RMASS1VE",
+        "repo": "Meshkeep",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SUP3RMASS1VE/Meshkeep.git"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.11"
   }
 }

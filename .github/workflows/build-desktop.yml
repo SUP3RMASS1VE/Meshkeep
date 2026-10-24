@@ -61,11 +61,20 @@ jobs:
         if: runner.os == 'macOS'
         env:
           MME_BUILD_PYTHON: python3
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: zsh build-mac.sh
       - name: Build and test Windows app
         if: runner.os == 'Windows'
         shell: pwsh
         run: ./build-windows.ps1 -Python python
+      - name: Test real update feed and download verification
+        env:
+          MME_UPDATER_MODULES: ${{ runner.os == 'Windows' && 'build/windows-desktop/node_modules' || 'desktop/node_modules' }}
+        run: node --test tests/test_update_feed.cjs
       - name: Prepare installer and checksums
         env:
           MME_CI_PLATFORM: ${{ matrix.platform }}
@@ -121,7 +130,5 @@ jobs:
               --title "Meshkeep $RELEASE_TAG" --generate-notes
           fi
           gh release upload "$RELEASE_TAG" --clobber \
-            build/release-upload/*.dmg \
-            build/release-upload/*Setup.exe \
-            build/release-upload/SHA256SUMS.txt
+            build/release-upload/*
           echo "Draft release prepared: $RELEASE_TAG. Review it under Releases before publishing." >> "$GITHUB_STEP_SUMMARY"

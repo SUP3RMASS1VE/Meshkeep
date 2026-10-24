@@ -24,11 +24,13 @@ try {
         Check-Exit 'Source and packaged server regression tests'
         & node tests/test_slicer.cjs
         Check-Exit 'Native bridge regression tests'
+        & node --test tests/test_updater.cjs tests/test_update_bridge.cjs tests/test_update_ui.cjs
+        Check-Exit 'Auto-update regression tests'
     } finally { $env:MME_PACKAGED_SERVER = $previousServer }
     # Keep copied Mac dependencies and release output intact.
     $stage = Join-Path $PSScriptRoot 'build/windows-desktop'
     New-Item -ItemType Directory -Force -Path "$stage/build" | Out-Null
-    Copy-Item desktop/main.js,desktop/preload.js,desktop/package.json,desktop/package-lock.json -Destination $stage -Force
+    Copy-Item desktop/main.js,desktop/preload.js,desktop/updater.js,desktop/package.json,desktop/package-lock.json -Destination $stage -Force
     Copy-Item desktop/build/icon.ico -Destination "$stage/build/icon.ico" -Force
     New-Item -ItemType Directory -Force -Path "$stage/sidecar-dist-win" | Out-Null
     Copy-Item desktop/sidecar-dist-win/mme-server -Destination "$stage/sidecar-dist-win" -Recurse -Force
