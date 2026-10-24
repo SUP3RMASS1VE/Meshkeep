@@ -64,10 +64,10 @@ class ApiLibraryTests(unittest.TestCase):
         self.fail('Job did not complete')
 
     def test_authentication_and_path_scope(self):
-        for endpoint in ('browse', 'model', 'preview', 'workspace', 'organization', 'geometryCandidates', 'printPhoto'):
+        for endpoint in ('browse', 'model', 'preview', 'workspace', 'project', 'organization', 'geometryCandidates', 'printPhoto'):
             status, _, _ = self.request(endpoint, {'path': self.path}, auth=False)
             self.assertEqual(status, 403)
-        for endpoint in ('scan', 'duplicates', 'cachePreview', 'annotate', 'collection', 'print', 'watch', 'geometry'):
+        for endpoint in ('scan', 'duplicates', 'cachePreview', 'annotate', 'project', 'collection', 'print', 'watch', 'geometry'):
             status, _, _ = self.request(endpoint, body={'path': self.root}, auth=False)
             self.assertEqual(status, 403)
         status, _, _ = self.request('model', {'path': '/etc/hosts'})

@@ -138,3 +138,26 @@ launcher. Browser workspace checks are in `tests/ui/workspace.cjs`; see
 ## 3MF painted colours (v2.0.1)
 
 The studio reads Bambu/Orca filament palettes, object/part filament assignments and facet painting, including subdivided colour boundaries. Standard 3MF base materials and vertex colours continue to work. Original colours restores the imported palette after appearance changes. Missing palettes or malformed painting produce a visible warning rather than invented colours. Texture extensions remain unsupported. See [colour verification](3mf-colours.md).
+
+
+## Multipart projects
+
+Select model files, then choose **+** beside **Projects** in the sidebar. Name the
+project to start a build checklist. You can also create an empty project. Projects
+are scoped to the folder you are browsing and its subfolders.
+
+To add more parts, close the project panel, select models in the browser, reopen
+the project from the sidebar and choose **Add selected models**. Adding the same
+file again preserves its existing progress; increase **Copies needed** for repeats.
+
+Each part has a name, copies needed, copies printed, notes and a status: To print,
+Printing, Needs another attempt, Printed or Assembled. Choose **Save part** after
+editing. Selecting Printed or Assembled fills the printed count with the required
+quantity. The progress bar counts printed copies; the separate assembly count
+shows how many part entries have been assembled.
+
+Project progress is independent of a model's library print status and print journal,
+so the same file can be used in multiple builds. Renaming a model within Meshkeep
+preserves its link. Missing files remain in the checklist with a warning and retain
+their progress. Removing parts or deleting a project never deletes model files.
+This version tracks model files, not individual meshes embedded inside a 3MF.

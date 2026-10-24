@@ -533,7 +533,7 @@ def make_handler(api, token):
                 name = route[len("/api/"):]
                 getters = {"config": api.config, "list": api.list,
                            "meta": api.meta, "job": api.job, 'browse': api.browse, 'workspace': api.workspace,
-                           'organization': api.organization, 'geometryCandidates': api.geometry_candidates}
+                           'project': api.project, 'organization': api.organization, 'geometryCandidates': api.geometry_candidates}
                 try:
                     if name == "thumb":
                         mime, data = api.thumb(query)
@@ -583,7 +583,7 @@ def make_handler(api, token):
                        "discardBackup": api.discard_backup,
                        'scan': api.scan, 'duplicates': api.duplicates,
                        'cachePreview': api.cache_preview, 'annotate': api.annotate,
-                       'collection': api.collection_action, 'print': api.print_action,
+                       'project': api.project_action, 'collection': api.collection_action, 'print': api.print_action,
                        'watch': api.watch_action, 'geometry': api.geometry_save}
             if name not in posters:
                 return self.fail("Unknown endpoint %s" % name, 404)

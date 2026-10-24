@@ -32,6 +32,7 @@
   <aside class="pane folder-sidebar" aria-label="Folder explorer">
     <div class="pane-head"><strong>Folders</strong><span class="hint">Expand an arrow or choose a folder</span></div>
     <div class="sidebar-group"><div class="sidebar-title"><span>COLLECTIONS</span><button id="newCollection" class="iconbtn" type="button" aria-label="New collection">+</button></div><nav id="collectionList" aria-label="Collections"></nav></div>
+    <div class="sidebar-group"><div class="sidebar-title"><span>PROJECTS</span><button id="newProject" class="iconbtn" type="button" aria-label="New multipart project">+</button></div><nav id="projectList" aria-label="Projects"></nav></div>
     <div class="sidebar-group"><div class="sidebar-title"><span>WATCHED FOLDERS</span><button id="watchCurrent" class="iconbtn" type="button" aria-label="Watch current folder">+</button></div><div id="watchList"></div></div>
     <nav id="folderTree" class="scroll" aria-label="Folder tree"></nav>
   </aside>
@@ -264,6 +265,24 @@
 </form></dialog>
 <dialog id="photoDialog" class="photo-dialog" aria-label="Finished print photo"><button type="button" data-close="photoDialog" aria-label="Close photo">Close</button><img id="fullPrintPhoto" alt="Finished print"></dialog>
 <script src="/updates.js"></script>
+<dialog id="projectCreateDialog" class="workspace-dialog" aria-labelledby="projectCreateTitle"><form id="projectCreateForm">
+  <div class="dialog-heading"><h2 id="projectCreateTitle">New multipart project</h2><button type="button" data-close="projectCreateDialog" aria-label="Close new project">×</button></div>
+  <label>Project name<input type="text" id="newProjectName" maxlength="100" required placeholder="Robot assembly"></label>
+  <p id="projectSelectionHint" class="hint"></p><p id="projectCreateError" class="form-error" role="alert"></p>
+  <button type="submit" class="primary">Create project</button>
+</form></dialog>
+<dialog id="projectDialog" class="workspace-dialog project-dialog" aria-labelledby="projectTitle">
+  <div class="dialog-heading"><h2 id="projectTitle">Project</h2><button type="button" data-close="projectDialog" aria-label="Close project">×</button></div>
+  <p id="projectSummary" aria-live="polite"></p><progress id="projectProgress" aria-label="Copies printed" max="1" value="0"></progress>
+  <p id="projectRoot" class="hint"></p>
+  <details><summary>Project details</summary><form id="projectDetailsForm">
+    <label>Name<input type="text" id="projectName" maxlength="100" required></label><label>Build notes<textarea id="projectNotes" maxlength="10000"></textarea></label>
+    <button type="submit">Save project details</button>
+  </form></details>
+  <div class="toolbar-row project-actions"><button type="button" id="projectAddSelected">Add selected models</button><button type="button" id="projectDelete">Delete project</button></div>
+  <p id="projectError" class="form-error" role="alert"></p><div id="projectParts"></div>
+</dialog>
+<script src="/projects.js"></script>
 <script src="/workspace.js"></script>
 <script src="/browser.js"></script>
 <script src="/app.js"></script>

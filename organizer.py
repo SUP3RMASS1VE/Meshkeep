@@ -33,6 +33,8 @@ def install(db):
       CREATE VIEW current_geometry AS SELECT g.*,m.folder FROM geometry g JOIN models m ON m.path=g.path
         AND g.size=CAST(m.size AS TEXT) AND g.mtime=CAST(m.mtime_ns AS TEXT) AND g.ctime=CAST(m.ctime_ns AS TEXT);
     ''')
+    from projects import install as install_projects
+    install_projects(db)
     if 'changed' not in {row[1] for row in db.execute('PRAGMA table_info(watched_folders)')}:
         db.execute('ALTER TABLE watched_folders ADD COLUMN changed REAL')
 
@@ -160,6 +162,6 @@ class Organizer:
 
     def move(self, old, new):
         with self.library.connect() as db:
-            for table in ('annotations', 'tags', 'collection_members', 'prints'):
+            for table in ('annotations', 'tags', 'collection_members', 'prints', 'project_parts'):
                 db.execute('UPDATE OR REPLACE '+table+' SET path=? WHERE path=?', (new, old))
             db.execute('DELETE FROM geometry WHERE path=?', (old,))

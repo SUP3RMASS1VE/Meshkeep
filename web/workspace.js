@@ -6,6 +6,7 @@ class Workspace {
     const $=id=>document.getElementById(id);
     for(const button of document.querySelectorAll('[data-close]'))button.onclick=()=>$(button.dataset.close).close();
     $('toggleSidebar').onclick=()=>{const open=document.body.classList.toggle('sidebar-open');$('toggleSidebar').setAttribute('aria-expanded',String(open))};
+    this.projects=new Projects(this);
     $('newCollection').onclick=()=>this.newCollection();
     $('collectionKind').onchange=()=>{$('smartRules').hidden=$('collectionKind').value!=='smart'};
     $('collectionForm').onsubmit=event=>this.createCollection(event);
@@ -33,7 +34,7 @@ class Workspace {
   el(id){return document.getElementById(id)}
   async refresh(){
     this.data=await this.api('/api/workspace');
-    this.renderCollections();this.renderWatches();
+    this.renderCollections();this.renderWatches();this.projects.render(this.data.projects||[]);
     const filter=this.el('tagFilter'),selected=filter.value;
     filter.replaceChildren(new Option('All tags',''),...this.data.tags.map(t=>new Option(`${t.tag} (${t.count})`,t.tag)));
     filter.value=selected;

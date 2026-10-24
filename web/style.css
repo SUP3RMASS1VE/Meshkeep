@@ -162,12 +162,12 @@ ul.dirlist { margin-bottom: 4px; }
 .field .with-btn input { flex: 1; min-width: 0; }
 .field.indent label { padding-left: 18px; }
 
-input[type=text], textarea {
+input[type=text], .project-part input[type=number], textarea {
   width: 100%; background: var(--pane-2); color: var(--text);
   border: 1px solid var(--line); border-radius: 7px;
   padding: 7px 9px; font: inherit; min-width: 0;
 }
-input[type=text]:focus, textarea:focus {
+input[type=text]:focus, .project-part input[type=number]:focus, textarea:focus {
   outline: none; border-color: var(--accent-dim);
   box-shadow: 0 0 0 2px rgba(110, 231, 183, .12);
 }
@@ -428,3 +428,14 @@ button:hover:not(:disabled) { border-color:#8c6fb0; }
 .update-copy p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
 .update-banner progress { width: 150px; accent-color: var(--accent); }
 .update-banner button { flex: none; }
+
+/* Multipart project workspace */
+.project-dialog { width:min(720px,93vw); }
+.project-dialog progress { width:100%; accent-color:var(--accent); }
+.project-dialog .hint { overflow-wrap:anywhere; }
+.project-actions { margin-top:18px; flex-wrap:wrap; }
+.project-part { border:1px solid #6c5184; border-radius:12px; padding:16px; margin:16px 0; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.project-part > p,.project-part > label:first-of-type,.project-part > label:last-of-type,.project-part > div { grid-column:1 / -1; }
+.project-part input,.project-part select,.project-part textarea { width:100%; min-width:0; box-sizing:border-box; }
+.project-part textarea { min-height:65px; }
+@media(max-width:540px) { .project-part { grid-template-columns:1fr; } }

@@ -62,3 +62,7 @@ rebuilt `Meshkeep.app/Contents/MacOS/Meshkeep` executable, then run
 generated painted cube and separate test home/profile, then verifies bundled
 startup, colours, saved organisation, restart, single-instance handling and server
 shutdown. It does not read or rewrite personal models.
+
+Run `node tests/ui/projects.cjs` with the same fixture and environment to check
+project creation, quantities, duplicate additions, persistence after reload, assembly,
+mobile panel sizing, removal and deletion.

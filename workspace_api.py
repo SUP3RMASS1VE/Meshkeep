@@ -6,9 +6,10 @@ import formats
 from formats.base import MetaError
 from library import like, signature, under
 from organizer import Organizer, text
+from projects import ProjectApi
 
 
-class WorkspaceApi:
+class WorkspaceApi(ProjectApi):
     def selected_paths(self, body):
         paths = body.get('paths', [body.get('path')])
         if not isinstance(paths, list) or not 0 < len(paths) <= 500:
@@ -28,7 +29,8 @@ class WorkspaceApi:
             collections = [dict(r) for r in db.execute('SELECT id,name,root,kind FROM collections ORDER BY name COLLATE NOCASE') if under(r['root'], self.root)]
             watches = [dict(r) for r in db.execute('SELECT * FROM watched_folders ORDER BY path') if under(r['path'], self.root)]
             tags = [dict(r) for r in db.execute('SELECT tag,COUNT(*) AS count FROM tags WHERE path LIKE ? ESCAPE "\\" GROUP BY tag ORDER BY tag', (like(self.root.rstrip(os.sep))+'/%',))]
-        return {'collections': collections, 'watches': watches, 'tags': tags}
+            projects = [dict(r) for r in db.execute('SELECT p.*, COALESCE(SUM(t.required),0) AS required, COALESCE(SUM(t.completed),0) AS completed FROM projects p LEFT JOIN project_parts t ON t.project_id=p.id GROUP BY p.id ORDER BY p.name COLLATE NOCASE') if under(r['root'], self.root)]
+        return {'collections': collections, 'watches': watches, 'tags': tags, 'projects': projects}
 
     def organization(self, q):
         path = self.resolve(q.get('path', [''])[0])
