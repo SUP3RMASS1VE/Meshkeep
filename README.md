@@ -12,6 +12,12 @@ Your models stay in their original folders. Tags, collections and print records 
 
 ![Meshkeep library and organisation tools](docs/meshkeep-2-workspace.png)
 
+## Support Meshkeep
+
+If you like Meshkeep and would like to support my work, please consider purchasing **[MeshCut](https://meshcut-licensing.onrender.com/download)**, my companion desktop app for cutting, splitting and preparing 3D models for printing.
+
+MeshCut helps you turn larger models into printable parts, add connectors and export them for your slicer. Your purchase helps support the continued development of my apps. You can also find it through **Get MeshCut** in Meshkeep's header.
+
 ## Features
 
 - **Browse your library:** folder tree, grid, list and preview views, with search, filters and sorting.
@@ -30,11 +36,11 @@ Your models stay in their original folders. Tags, collections and print records 
 
 Meshkeep browses and previews **3MF, STL, OBJ, PLY and AMF** files. Metadata fields and editing support vary by format.
 
-Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.5**, which adds multipart projects with quantities, print progress, assembly status and part notes. GitHub release checks and in-app updates were introduced in 2.0.4. Preview limits remain 250 MiB per model and 500 MiB unpacked for 3MF.
+Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.6**, which adds a Get MeshCut link and improves the header layout on smaller screens. Multipart projects were introduced in 2.0.5. GitHub release checks and in-app updates were introduced in 2.0.4. Preview limits remain 250 MiB per model and 500 MiB unpacked for 3MF.
 
 ## Install on Windows
 
-Download `Meshkeep-2.0.5-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
+Download `Meshkeep-2.0.6-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
 It installs for your Windows account and creates Start menu and desktop shortcuts.
 The app bundles Python and Electron; Python and Node.js are not needed to use it.
 This build is unsigned, so Windows may show an unknown-publisher warning.
@@ -133,7 +139,7 @@ On an Apple Silicon Mac, install Node.js 18 or later and Xcode Command Line Tool
 The script builds the Python sidecar using PyInstaller, smoke-tests it, installs the locked Electron dependencies and packages the app. Re-running it rebuilds the generated outputs in `desktop/dist/`:
 
 ```text
-Meshkeep-2.0.5-arm64.dmg
+Meshkeep-2.0.6-arm64.dmg
 mac-arm64/Meshkeep.app
 ```
 
