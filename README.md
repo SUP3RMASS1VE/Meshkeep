@@ -36,11 +36,11 @@ MeshCut helps you turn larger models into printable parts, add connectors and ex
 
 Meshkeep browses and previews **3MF, STL, OBJ, PLY and AMF** files. Metadata fields and editing support vary by format.
 
-Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.6**, which adds a Get MeshCut link and improves the header layout on smaller screens. Multipart projects were introduced in 2.0.5. GitHub release checks and in-app updates were introduced in 2.0.4. Preview limits remain 250 MiB per model and 500 MiB unpacked for 3MF.
+Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.7**, which fixes Mac bundle signatures and verifies them during packaging. Version 2.0.6 added a Get MeshCut link and improved the header layout on smaller screens. Multipart projects were introduced in 2.0.5. GitHub release checks and in-app updates were introduced in 2.0.4. Preview limits remain 250 MiB per model and 500 MiB unpacked for 3MF.
 
 ## Install on Windows
 
-Download `Meshkeep-2.0.6-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
+Download `Meshkeep-2.0.7-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
 It installs for your Windows account and creates Start menu and desktop shortcuts.
 The app bundles Python and Electron; Python and Node.js are not needed to use it.
 This build is unsigned, so Windows may show an unknown-publisher warning.
@@ -139,7 +139,7 @@ On an Apple Silicon Mac, install Node.js 18 or later and Xcode Command Line Tool
 The script builds the Python sidecar using PyInstaller, smoke-tests it, installs the locked Electron dependencies and packages the app. Re-running it rebuilds the generated outputs in `desktop/dist/`:
 
 ```text
-Meshkeep-2.0.6-arm64.dmg
+Meshkeep-2.0.7-arm64.dmg
 mac-arm64/Meshkeep.app
 ```
 

@@ -25,6 +25,7 @@ node --test tests/test_updater.cjs tests/test_update_bridge.cjs tests/test_updat
 
 echo "==> 3/3 Packaging Electron app"
 (cd desktop && npm ci && npx electron-builder --config electron-builder.mac.cjs --mac --arm64 --publish never)
+/usr/bin/codesign --verify --deep --strict --verbose=2 desktop/dist/mac-arm64/Meshkeep.app
 
 echo
 echo "Done:"

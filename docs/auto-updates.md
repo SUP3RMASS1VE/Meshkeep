@@ -6,6 +6,14 @@ remain publicly readable, or the update assets must move to another public
 release repository and the build's `publish` configuration must change.
 No GitHub token is bundled or required on users' computers.
 
+From 2.0.7, Mac builds without a Developer ID certificate receive a complete
+ad-hoc signature, including nested executables. This replaces Electron's stale
+signature after packaging. The build verifies the final app with
+`codesign --verify --deep --strict` and fails if verification fails. Ad-hoc
+signing does not provide Apple notarization or enable Mac in-app installation;
+the Developer ID requirements below still apply. Replace a 2.0.6 download that
+reports a damaged app with 2.0.7 or later instead of disabling Gatekeeper.
+
 ## User experience
 
 - The installed app checks once after its first window appears. Development
