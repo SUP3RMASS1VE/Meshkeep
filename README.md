@@ -14,7 +14,7 @@ Your models stay in their original folders. Tags, collections and print records 
 
 ## Support Meshkeep
 
-If you like Meshkeep and would like to support my work, please consider purchasing **[MeshCut](https://meshcut-licensing.onrender.com/download)**, my companion desktop app for cutting, splitting and preparing 3D models for printing.
+If you like Meshkeep and would like to support my work, please consider purchasing **[MeshCut](https://meshcut.co.uk)**, my companion desktop app for cutting, splitting and preparing 3D models for printing.
 
 MeshCut helps you turn larger models into printable parts, add connectors and export them for your slicer. Your purchase helps support the continued development of my apps. You can also find it through **Get MeshCut** in Meshkeep's header.
 
