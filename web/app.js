@@ -98,6 +98,7 @@ function renderSelection() {
 }
 
 $('clearSelection').onclick = () => {
+  browser.cancelSelection();
   state.selection.clear();
   document.querySelectorAll('.filerow input[type=checkbox]').forEach((c) => { c.checked = false; });
   renderSelection();
@@ -565,7 +566,21 @@ $('batchBtn').onclick = async () => {
 
 /* ── boot ──────────────────────────────────────────────── */
 
+function selectAllModelsShortcut() {
+  const focused = document.activeElement;
+  const editing = focused?.matches('textarea,select,input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit])') || focused?.isContentEditable;
+  if (editing || document.querySelector('dialog[open]')) return false;
+  browser.selectAll();
+  return true;
+}
+window.meshkeepDesktop?.onSelectAll?.(() => {
+  if (!selectAllModelsShortcut()) document.execCommand('selectAll');
+});
 document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'a' && selectAllModelsShortcut()) {
+    e.preventDefault();
+    return;
+  }
   if ((e.metaKey || e.ctrlKey) && e.key === 's') {
     e.preventDefault();
     if (!$('single').hidden) save();

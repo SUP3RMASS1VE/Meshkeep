@@ -66,3 +66,14 @@ shutdown. It does not read or rewrite personal models.
 Run `node tests/ui/projects.cjs` with the same fixture and environment to check
 project creation, quantities, duplicate additions, persistence after reload, assembly,
 mobile panel sizing, removal and deletion.
+
+Run `node tests/ui/assembly.cjs` with the same fixture and environment to check
+Assembly Studio's repeated copies, saved positions and rotations, exploded view,
+missing-file handling, save failure recovery, unsaved edits, responsive layout
+and cancellation while loading. It uses synthetic models and an isolated test
+project.
+
+Run `node tests/ui/selection.cjs` to check Select All, both keyboard shortcuts,
+text-field and dialog protection, adding the selection to a project, selection
+across paginated results, cancellation after filter changes and the batch limit.
+The packaged Mac check also exercises the native menu shortcut and text selection.

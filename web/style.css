@@ -444,6 +444,8 @@ button:hover:not(:disabled) { border-color:#8c6fb0; }
 .project-dialog progress { width:100%; accent-color:var(--accent); }
 .project-dialog .hint { overflow-wrap:anywhere; }
 .project-actions { margin-top:18px; flex-wrap:wrap; }
+.project-studio-launch { border:1px solid #6c5184; border-radius:12px; padding:14px; margin:16px 0; background:linear-gradient(120deg,#35253f,#252031); }
+.project-studio-launch .hint { margin:8px 0 0; }
 .project-part { border:1px solid #6c5184; border-radius:12px; padding:16px; margin:16px 0; grid-template-columns:repeat(2,minmax(0,1fr)); }
 .project-part > p,.project-part > label:first-of-type,.project-part > label:last-of-type,.project-part > div { grid-column:1 / -1; }
 .project-part input,.project-part select,.project-part textarea { width:100%; min-width:0; box-sizing:border-box; }

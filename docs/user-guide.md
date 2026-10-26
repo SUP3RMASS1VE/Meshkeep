@@ -20,6 +20,12 @@ See [Mac installation and Gatekeeper instructions](../README.md#install-on-mac) 
 - Filter by format and sort by name, file size, modified date, format, title or
   designer. Results are paged in groups of 80 so large collections do not create
   thousands of DOM elements.
+- Choose **Select All**, or press **⌘A** on Mac / **Ctrl+A** on Windows while
+  browsing, to select all matching models across every page. This replaces the
+  previous selection and respects the current folder, collection, search and
+  filters. Up to 500 models can be selected at once; narrow the results for larger
+  libraries. Typing fields keep their normal text-selection shortcut. Open a
+  project and choose **Add selected models** to add all those parts together.
 - **Find duplicates** refreshes the index, then compares SHA-256 hashes of
   same-size files. **Duplicates only** shows matching files and their group
   counts. This finds byte-identical copies, including renamed copies; metadata
@@ -161,3 +167,50 @@ so the same file can be used in multiple builds. Renaming a model within Meshkee
 preserves its link. Missing files remain in the checklist with a warning and retain
 their progress. Removing parts or deleting a project never deletes model files.
 This version tracks model files, not individual meshes embedded inside a 3MF.
+
+## Assembly Studio
+
+Open a multipart project and choose **Open Assembly Studio**. Each required copy
+appears as a separate piece, including repeated copies of the same file. Copies
+already counted as printed appear solid; the remaining copies are ghosted.
+Update the project's **Copies printed** count and reopen the studio to see the
+build's progress.
+
+New pieces start in a compact layout using each piece's own footprint, so a
+large multi-plate 3MF does not push all the other pieces far apart. Select a piece in the scene or the parts
+list, then use **Move** or **Rotate** and drag its handles to arrange it. You can
+also enter an exact position in millimetres or rotation in degrees and apply the
+placement. Coordinates use the printing convention: X and Y across the bed,
+Z upwards. The drag handles follow the selected piece's local axes; the numeric
+fields use fixed project coordinates. Positions refer to the centre of each model. Meshkeep does not infer
+how separate files fit together; arrange the assembled model and choose
+**Save layout** to keep those placements with the project.
+
+Use the **Exploded view** slider to spread the pieces out and bring them back
+together. Return the slider to zero to edit placements. Exploding the view does
+not change the assembled positions that are saved. **Fit assembly** frames the
+current view and shows all pieces. **Focus piece** isolates the selected piece
+and frames it close up; selecting another piece while focused switches that view.
+Turn off **Ghost unfinished pieces** for a solid view while arranging. These view
+controls do not change print counts or saved placements. Selecting a piece shows
+its filename, copy number and print progress; multi-mesh files are labelled as
+moving together.
+
+**Compact layout** rearranges all loaded copies by their individual footprints,
+preserving their rotations. It asks before replacing positions and requires
+**Save layout** to make the change permanent. Use it to recover an overly
+spread-out layout. New pieces added to an existing saved layout are placed beside
+the saved pieces, leaving those saved positions intact.
+
+Layouts live in the local catalogue alongside project progress and do not alter
+model files. In-app renames retain placements. Removing a part removes its
+placements; reducing its required quantity removes placements for the copies no
+longer needed. Missing or unpreviewable files are listed in the studio, while
+available pieces remain usable. Saving the visible pieces preserves placements
+for pieces that could not be loaded.
+
+The scene supports up to **200 copies** and **5 million rendered triangles** in
+total, in addition to the existing per-file preview limits. Copies count towards
+the triangle limit individually. Each file moves as one piece; component meshes
+inside a 3MF retain their internal arrangement. Large or unsupported pieces are
+reported rather than silently omitted.

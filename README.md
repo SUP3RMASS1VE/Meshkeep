@@ -23,6 +23,7 @@ MeshCut helps you turn larger models into printable parts, add connectors and ex
 - **Browse your library:** folder tree, grid, list and preview views, with search, filters and sorting.
 - **Organise without moving files:** tags, library notes, hand-picked collections and smart collections based on rules.
 - **Build multipart projects:** group model files into projects, set required quantities, track printed copies and assembly status, and keep notes for each part.
+- **Bring projects together in Assembly Studio:** arrange each required copy in one 3D scene, save positions and rotations, and explore an exploded view. Printed copies appear solid and unfinished copies are ghosted.
 - **Track your prints:** Want to print, Printed and Needs another attempt, plus a print journal with printer, material, settings, notes and photos.
 - **Watch folders:** automatically index additions and changes in selected folders while Meshkeep is open.
 - **Preview in 3D:** orbit, pan, zoom, lighting presets, materials, exposure, wireframe, part picking and isolation.
@@ -32,15 +33,17 @@ MeshCut helps you turn larger models into printable parts, add connectors and ex
 - **Send to your slicer:** open selected models in your chosen slicer from the Mac or Windows desktop app.
 - **Edit metadata:** update supported names, authorship and other metadata; add a custom 3MF cover image.
 
+![Assembly Studio showing a multipart robot with printed and ghosted copies](docs/meshkeep-assembly-studio.png)
+
 ## Supported formats and platforms
 
 Meshkeep browses and previews **3MF, STL, OBJ, PLY and AMF** files. Metadata fields and editing support vary by format.
 
-Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.7**, which fixes Mac bundle signatures and verifies them during packaging. Version 2.0.6 added a Get MeshCut link and improved the header layout on smaller screens. Multipart projects were introduced in 2.0.5. GitHub release checks and in-app updates were introduced in 2.0.4. Preview limits remain 250 MiB per model and 500 MiB unpacked for 3MF.
+Meshkeep supports desktop apps for **Apple Silicon Macs** and **Windows x64**. The current source version is **2.0.8**, which adds Assembly Studio, Select All across matching models, and the new MeshCut domain. Version 2.0.7 fixed Mac bundle signatures and added packaging verification. Version 2.0.6 added a Get MeshCut link and improved the header layout on smaller screens. Multipart projects were introduced in 2.0.5. GitHub release checks and in-app updates were introduced in 2.0.4. Preview limits remain 250 MiB per model and 500 MiB unpacked for 3MF.
 
 ## Install on Windows
 
-Download `Meshkeep-2.0.7-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
+Download `Meshkeep-2.0.8-Windows-x64-Setup.exe` from the [**Releases**](https://github.com/SUP3RMASS1VE/Meshkeep/releases) page when available, then open it and follow the installer.
 It installs for your Windows account and creates Start menu and desktop shortcuts.
 The app bundles Python and Electron; Python and Node.js are not needed to use it.
 This build is unsigned, so Windows may show an unknown-publisher warning.
@@ -113,6 +116,7 @@ Tags, collections and print history live in the catalogue; they are not embedded
 See [higher-limit verification](docs/higher-preview-limits.md) for the tested large models and boundary checks.
 
 - Studio input: **250 MiB per model**, **500 MiB unpacked for 3MF**, and **5 million triangles**, including painted subdivisions and instances.
+- Assembly Studio: **200 copies** and **5 million rendered triangles** across the scene. Parts are arranged manually; each model file is treated as one piece, including the meshes inside a 3MF.
 - Automatic thumbnail generation: files up to **16 MiB**. Larger models can be opened manually within the studio limits.
 - 3MF texture-based extensions and external OBJ material/texture files are not loaded. Unsupported 3MF materials produce a notice.
 - STL, OBJ and PLY coordinates are assumed to be millimetres; AMF and 3MF units are respected.
@@ -139,7 +143,7 @@ On an Apple Silicon Mac, install Node.js 18 or later and Xcode Command Line Tool
 The script builds the Python sidecar using PyInstaller, smoke-tests it, installs the locked Electron dependencies and packages the app. Re-running it rebuilds the generated outputs in `desktop/dist/`:
 
 ```text
-Meshkeep-2.0.7-arm64.dmg
+Meshkeep-2.0.8-arm64.dmg
 mac-arm64/Meshkeep.app
 ```
 

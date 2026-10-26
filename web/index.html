@@ -7,6 +7,7 @@
 <link rel="icon" type="image/png" href="/meshkeep-icon.png">
 <link rel="apple-touch-icon" href="/meshkeep-icon.png">
 <link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/assembly.css">
 <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.min.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 </head>
 <body>
@@ -19,7 +20,7 @@
   <p class="tagline">Browse, organise and preview your 3D models. Everything stays on this machine.</p>
   <div class="topbar-actions">
     <button id="checkUpdates" class="ghost update-check" type="button" hidden>Check for updates</button>
-    <a class="meshcut-link" href="https://meshcut-licensing.onrender.com/download" target="_blank" rel="noopener noreferrer" title="Support Meshkeep by purchasing MeshCut: cut, split and prepare models for 3D printing." aria-label="Get MeshCut (opens in your browser)">Get MeshCut <span aria-hidden="true">↗</span></a>
+    <a class="meshcut-link" href="https://meshcut.co.uk" target="_blank" rel="noopener noreferrer" title="Support Meshkeep by purchasing MeshCut: cut, split and prepare models for 3D printing." aria-label="Get MeshCut (opens in your browser)">Get MeshCut <span aria-hidden="true">↗</span></a>
   </div>
 </header>
 
@@ -66,6 +67,7 @@
       <div class="toolbar-row">
         <div id="viewModes" class="view-modes" aria-label="View mode"><button data-view="folders" type="button">Folders</button><button data-view="grid" type="button">Grid</button><button data-view="list" type="button">List</button><button data-view="preview" type="button">Preview</button></div>
         <span id="resultsStatus" class="hint" role="status" aria-live="polite"></span>
+        <button id="selectAllModels" type="button" disabled title="Select all matching models across every page (up to 500). ⌘A / Ctrl+A">Select All</button>
       </div>
       <div class="toolbar-row">
         <button id="indexFolder" type="button" title="Index this folder and all its subfolders; run again to refresh">Index folder</button>
@@ -278,6 +280,7 @@
   <div class="dialog-heading"><h2 id="projectTitle">Project</h2><button type="button" data-close="projectDialog" aria-label="Close project">×</button></div>
   <p id="projectSummary" aria-live="polite"></p><progress id="projectProgress" aria-label="Copies printed" max="1" value="0"></progress>
   <p id="projectRoot" class="hint"></p>
+  <div class="project-studio-launch"><button type="button" id="projectAssembly" class="primary">Open Assembly Studio</button><p class="hint">Arrange your parts in 3D and watch the build take shape.</p></div>
   <details><summary>Project details</summary><form id="projectDetailsForm">
     <label>Name<input type="text" id="projectName" maxlength="100" required></label><label>Build notes<textarea id="projectNotes" maxlength="10000"></textarea></label>
     <button type="submit">Save project details</button>

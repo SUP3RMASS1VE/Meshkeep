@@ -13,6 +13,7 @@ class Projects {
     };
     $('projectDetailsForm').onsubmit=event=>{event.preventDefault();this.change({action:'update',name:$('projectName').value,notes:$('projectNotes').value})};
     $('projectAddSelected').onclick=()=>this.change({action:'add',paths:[...workspace.state.selection]});
+    $('projectAssembly').onclick=()=>this.openAssembly();
     $('projectDelete').onclick=()=>{
       if(confirm('Delete this project and its progress? Model files and print history will stay in place.'))this.change({action:'delete'});
     };
@@ -37,6 +38,26 @@ class Projects {
       await this.workspace.refresh();
     });
   }
+  async openAssembly(){
+    const button=this.el('projectAssembly'),id=this.current?.id;
+    if(!id||this.busy)return;
+    button.disabled=true;
+    await this.run(this.el('projectError'),async()=>{
+      const {openAssembly}=await import('./assembly.js');
+      const item=await this.workspace.api('/api/project?id='+id);
+      if(!this.el('projectDialog').open||this.current?.id!==id)return;
+      this.current=item;
+      await openAssembly(item,{
+        saveLayout:async layout=>{
+          const saved=await this.workspace.post('/api/project',{action:'layout',id,layout});
+          if(this.current?.id===id)this.current=saved;
+          return saved;
+        },
+        onClose:()=>{if(this.el('projectDialog').open&&this.current?.id===id)this.show(this.current)}
+      });
+    });
+    button.disabled=!this.current?.parts.length;
+  }
   show(item){
     this.current=item;this.el('projectTitle').textContent=item.name;
     this.el('projectName').value=item.name;this.el('projectNotes').value=item.notes;this.el('projectError').textContent='';
@@ -44,6 +65,7 @@ class Projects {
     this.el('projectSummary').textContent=item.required?`${item.completed} of ${item.required} copies printed · ${assembled} of ${item.parts.length} parts assembled`:'No parts yet. Close this panel, select models, then reopen the project to add them.';
     const progress=this.el('projectProgress');progress.max=item.required||1;progress.value=item.completed;
     this.el('projectRoot').textContent='Models from '+item.root;
+    this.el('projectAssembly').disabled=!item.parts.length;
     this.el('projectAddSelected').disabled=!this.workspace.state.selection.size;
     this.el('projectAddSelected').textContent=`Add selected models (${this.workspace.state.selection.size})`;
     const list=this.el('projectParts');list.replaceChildren();

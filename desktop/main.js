@@ -247,7 +247,9 @@ function buildMenu() {
         { role: "cut" },
         { role: "copy" },
         { role: "paste" },
-        { role: "selectAll" },
+        { label: 'Select All', accelerator: 'CmdOrCtrl+A', click: (_item, focusedWindow) => {
+          focusedWindow?.webContents.send('meshkeep:selectAll');
+        } },
       ],
     },
     {

@@ -1,6 +1,11 @@
 // Narrow, origin-validated IPC bridge. No shell commands or arbitrary IPC exposed.
 const {contextBridge, ipcRenderer} = require('electron');
 contextBridge.exposeInMainWorld('meshkeepDesktop', {
+  onSelectAll: callback => {
+    const listener = () => callback();
+    ipcRenderer.on('meshkeep:selectAll', listener);
+    return () => ipcRenderer.removeListener('meshkeep:selectAll', listener);
+  },
   updateStatus: () => ipcRenderer.invoke('meshkeep:updateStatus'),
   checkUpdate: () => ipcRenderer.invoke('meshkeep:checkUpdate'),
   downloadUpdate: () => ipcRenderer.invoke('meshkeep:downloadUpdate'),

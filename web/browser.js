@@ -5,6 +5,7 @@ class LibraryBrowser {
     Object.assign(this, {state, api, post, follow, failure, openFile, renderSelection, showStudio});
     this.offset = 0;
     this.serial = 0;
+    this.selectionSerial = 0;
     this.view = localStorage.getItem('mme.view') || 'grid';
     this.treeCache = new Map();
     this.observer = new IntersectionObserver(entries => {
@@ -34,6 +35,7 @@ class LibraryBrowser {
     this.el('indexFolder').onclick = () => this.runJob('scan');
     this.el('findDuplicates').onclick = () => this.runJob('duplicates');
     this.el('refreshFolder').onclick = () => { this.treeCache.clear(); this.load(this.state.cwd); };
+    this.el('selectAllModels').onclick = () => this.selectAll();
     this.el('pathForm').onsubmit = event => {
       event.preventDefault(); this.navigate(this.el('pathInput').value.trim());
     };
@@ -41,12 +43,58 @@ class LibraryBrowser {
 
   el(id) { return document.getElementById(id); }
 
-  async load(path) {
-    const serial = ++this.serial;
-    const params = new URLSearchParams({path: path || '', search: this.el('searchInput').value,
+  browseParams(path = this.state.cwd) {
+    return new URLSearchParams({path: path || '', search: this.el('searchInput').value,
       scope: this.el('scopeSelect').value, ext: this.el('formatFilter').value,
       sort: this.el('sortSelect').value, desc: this.el('sortDirection').value,
       duplicates: this.el('duplicateFilter').checked ? '1' : '0', tag:this.el('tagFilter').value, status:this.el('statusFilter').value, collection:this.collectionId||'', geometry:this.el('geometryFilter').checked?'1':'0', offset: this.offset, limit: 80});
+  }
+
+  updateSelectAll() {
+    this.el('selectAllModels').disabled = !!this.loading || !!this.selecting || !this.state.listing?.total;
+    this.el('selectAllModels').textContent = this.selecting ? 'Selecting…' : 'Select All';
+  }
+
+  cancelSelection() {
+    ++this.selectionSerial;
+    this.selecting = false;
+    this.updateSelectAll();
+  }
+
+  async selectAll() {
+    if (this.loading || this.selecting || !this.state.listing?.total) return;
+    const serial = this.serial, selectionSerial = ++this.selectionSerial;
+    const snapshot = this.browseParams().toString();
+    const current = () => serial === this.serial && selectionSerial === this.selectionSerial && snapshot === this.browseParams().toString();
+    this.selecting = true; this.updateSelectAll();
+    try {
+      const params = new URLSearchParams(snapshot), paths = new Set();
+      let total;
+      params.set('limit', '200');
+      for (let offset = 0; total === undefined || offset < total; offset += 200) {
+        params.set('offset', String(offset));
+        const page = await this.api('/api/browse?' + params);
+        if (!current()) return;
+        if (page.total > 500) throw new Error('Select All supports up to 500 models. Narrow the folder or filters, then try again.');
+        if (total !== undefined && total !== page.total) throw new Error('The results changed while selecting. Please try Select All again.');
+        total = page.total;
+        page.files.forEach(file => paths.add(file.path));
+      }
+      if (paths.size !== total) throw new Error('The results changed while selecting. Please try Select All again.');
+      this.state.selection.clear();
+      paths.forEach(path => this.state.selection.add(path));
+      this.el('files').querySelectorAll('.filerow').forEach(row => {
+        row.querySelector('input[type=checkbox]').checked = paths.has(row.querySelector('.model-card').dataset.path);
+      });
+      this.renderSelection();
+    } catch (error) { if (current()) this.failure(error); }
+    finally { if (selectionSerial === this.selectionSerial) { this.selecting = false; this.updateSelectAll(); } }
+  }
+
+  async load(path) {
+    const serial = ++this.serial;
+    this.loading = true; this.cancelSelection();
+    const params = this.browseParams(path);
     this.el('resultsStatus').textContent = 'Loading models…';
     try {
       const data = await this.api('/api/browse?' + params);
@@ -60,6 +108,8 @@ class LibraryBrowser {
       await this.renderTree(data);
     } catch (err) {
       if (serial === this.serial) { this.el('resultsStatus').textContent = 'Could not load this folder'; this.failure(err); }
+    } finally {
+      if (serial === this.serial) { this.loading = false; this.updateSelectAll(); }
     }
   }
 
@@ -173,6 +223,7 @@ class LibraryBrowser {
     const box = document.createElement('input'); box.type = 'checkbox'; box.checked = this.state.selection.has(file.path);
     box.setAttribute('aria-label', 'Select ' + file.name);
     box.onchange = () => {
+      this.cancelSelection();
       if (box.checked) this.state.selection.add(file.path); else this.state.selection.delete(file.path);
       this.renderSelection();
     };

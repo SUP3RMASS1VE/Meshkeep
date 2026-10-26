@@ -24,7 +24,7 @@ try {
         Check-Exit 'Source and packaged server regression tests'
         & node tests/test_slicer.cjs
         Check-Exit 'Native bridge regression tests'
-        & node --test tests/test_updater.cjs tests/test_update_bridge.cjs tests/test_update_ui.cjs
+        & node --test tests/test_updater.cjs tests/test_update_bridge.cjs tests/test_update_ui.cjs tests/test_assembly_layout.cjs
         Check-Exit 'Auto-update regression tests'
     } finally { $env:MME_PACKAGED_SERVER = $previousServer }
     # Keep copied Mac dependencies and release output intact.
